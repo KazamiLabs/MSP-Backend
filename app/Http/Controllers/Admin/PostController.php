@@ -24,6 +24,7 @@ class PostController extends Controller
         foreach ($posts as $post) {
             $post->access_api = url("/api/post/{$post->post_name}/edit");
             unset($post->author->user_pass);
+            unset($post->post_password);
         }
         return $posts;
     }
