@@ -14,6 +14,7 @@ class PostController extends Controller
         $post = Post::where('id', $id)
             ->first();
         unset($post->author->user_pass);
+        unset($post->post_password);
         return $post;
     }
 

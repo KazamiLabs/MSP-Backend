@@ -21,5 +21,5 @@ Route::post('/message', 'MessageLogsController@uploadMessage');
 Route::get('/posts', 'PostController@getList');
 Route::get('/post/{id}', 'PostController@show');
 Route::get('/posts/admin', 'Admin\PostController@getList');
-Route::get('/posts/{id}/admin', 'Admin\PostController@show');
+Route::get('/post/{id}/admin', 'Admin\PostController@show');
 Route::get('/search/user', 'UserController@search');
