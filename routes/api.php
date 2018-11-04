@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,8 +19,14 @@ use Illuminate\Http\Request;
 // });
 
 Route::post('/message', 'MessageLogsController@uploadMessage');
+
+// Search
+Route::get('/search/user', 'UserController@search');
+
+// Post
 Route::get('/posts', 'PostController@getList');
 Route::get('/post/{id}', 'PostController@show');
 Route::get('/posts/admin', 'Admin\PostController@getList');
 Route::get('/post/{id}/admin', 'Admin\PostController@show');
-Route::get('/search/user', 'UserController@search');
+Route::post('/post/admin', 'Admin\PostController@add');
+Route::post('/post/{id}/admin', 'Admin\PostController@update');
