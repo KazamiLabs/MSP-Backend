@@ -21,6 +21,7 @@ $factory->define(App\User::class, function (Faker $faker) {
         'user_nicename'       => $name,
         'user_email'          => $faker->unique()->safeEmail,
         'user_url'            => '',
+        'timezone'            => $faker->timezone,
         'user_registered'     => date("Y-m-d H:i:s"),
         'user_activation_key' => '',
         'user_status'         => 0,
