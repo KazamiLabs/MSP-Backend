@@ -25,22 +25,23 @@ class CreatePostsTable extends Migration
             $table->string('ping_status', 20)->default('open');
             $table->string('post_password', 255)->default('');
             $table->string('post_name', 200)->default('');
-            $table->text('to_ping');
-            $table->text('pinged');
+            $table->text('to_ping')->nullable(true);
+            $table->text('pinged')->nullable(true);
             // 此类字段是节省时间的额外运算开销用
             $table->dateTime('post_date');
             $table->dateTime('post_date_gmt');
             $table->dateTime('post_modified');
             $table->dateTime('post_modified_gmt');
             // 帖子更新原因字段
-            $table->longText('post_content_filtered');
-            $table->bigInteger('post_parent');
-            $table->string('guid', 255);
-            $table->integer('menu_order');
+            $table->longText('post_content_filtered')->nullable(true);
+            $table->bigInteger('post_parent')->default(0);
+            $table->string('guid', 255)->default('');
+            $table->integer('menu_order')->default(100);
             $table->string('post_type', 20);
-            $table->string('post_mime_type', 100);
-            $table->bigInteger('comment_count');
+            $table->string('post_mime_type', 100)->default('');
+            $table->bigInteger('comment_count')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

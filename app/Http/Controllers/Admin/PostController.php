@@ -4,10 +4,35 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Post;
+use App\Traits\NullToString;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
+    private $fields = [
+        'post_author'           => '',
+        'post_content'          => '',
+        'post_title'            => '',
+        'post_excerpt'          => '',
+        'post_status'           => '',
+        'comment_status'        => '',
+        'ping_status'           => '',
+        'post_password'         => '',
+        'post_name'             => '',
+        'to_ping'               => '',
+        'pinged'                => '',
+        'post_date'             => '',
+        'post_date_gmt'         => '',
+        'post_modified'         => '',
+        'post_modified_gmt'     => '',
+        'post_content_filtered' => '',
+        'post_parent'           => '',
+        'guid'                  => '',
+        'menu_order'            => '',
+        'post_type'             => '',
+        'post_mime_type'        => '',
+    ];
+
     //
     public function show($id)
     {
@@ -35,35 +60,35 @@ class PostController extends Controller
     public function add(Request $request)
     {
         $post   = new Post();
-        $fields = [
-            'post_author'           => '',
-            'post_content'          => '',
-            'post_title'            => '',
-            'post_excerpt'          => '',
-            'post_status'           => '',
-            'comment_status'        => '',
-            'ping_status'           => '',
-            'post_password'         => '',
-            'post_name'             => '',
-            'to_ping'               => '',
-            'pinged'                => '',
-            'post_date'             => '',
-            'post_date_gmt'         => '',
-            'post_modified'         => '',
-            'post_modified_gmt'     => '',
-            'post_content_filtered' => '',
-            'post_parent'           => '',
-            'guid'                  => '',
-            'menu_order'            => '',
-            'post_type'             => '',
-            'post_mime_type'        => '',
-            'comment_count'         => '',
-        ];
+        $fields = $this->fields;
         foreach ($fields as $fields => $deal) {
+            if (!isset($request->$fields)) {
+                continue;
+            }
             if (empty($deal)) {
                 $post->$fields = $request->$fields;
             }
         }
         $post->save();
+        return response(null, 201);
+    }
+
+    public function update(Request $request, int $id)
+    {
+        if (empty($id)) {
+            return reponse(['msg' => 'ID非法'], 400);
+        }
+        $post   = new Post();
+        $fields = $this->fields;
+        foreach ($fields as $fields => $deal) {
+            if (!isset($request->$fields)) {
+                continue;
+            }
+            if (empty($deal)) {
+                $post->$fields = $request->$fields;
+            }
+        }
+        $post->save();
+        return response(null, 200);
     }
 }
