@@ -1,7 +1,12 @@
 {
-    "name": "laravel/laravel",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "name": "mabors/backend",
+    "description": "The backend which is based on the Laravel Framework.",
+    "keywords": [
+        "maboroshi subtitle group",
+        "mabors",
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "type": "project",
     "require": {
@@ -37,8 +42,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-            ]
+            "dont-discover": []
         }
     },
     "scripts": {
