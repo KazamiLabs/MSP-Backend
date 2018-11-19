@@ -28,16 +28,16 @@ class CreatePostsTable extends Migration
             $table->text('to_ping')->nullable(true);
             $table->text('pinged')->nullable(true);
             // 此类字段是节省时间的额外运算开销用
-            $table->dateTime('post_date');
-            $table->dateTime('post_date_gmt');
-            $table->dateTime('post_modified');
-            $table->dateTime('post_modified_gmt');
+            $table->dateTime('post_date')->default(DB::raw('NOW()'));
+            $table->dateTime('post_date_gmt')->default(DB::raw('NOW()'));
+            $table->dateTime('post_modified')->default(DB::raw('NOW()'));
+            $table->dateTime('post_modified_gmt')->default(DB::raw('NOW()'));
             // 帖子更新原因字段
             $table->longText('post_content_filtered')->nullable(true);
             $table->bigInteger('post_parent')->default(0);
             $table->string('guid', 255)->default('');
             $table->integer('menu_order')->default(100);
-            $table->string('post_type', 20);
+            $table->string('post_type', 20)->default('post');
             $table->string('post_mime_type', 100)->default('');
             $table->bigInteger('comment_count')->default(0);
             $table->timestamps();

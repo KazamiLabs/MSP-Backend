@@ -48,7 +48,7 @@ class PostController extends Controller
     public function getList(Request $request)
     {
         $limit = $request->get('limit', 15);
-        $posts = Post::paginate($limit);
+        $posts = Post::orderBy('id', 'desc')->paginate($limit);
         foreach ($posts as $post) {
             $post->access_api = url("/api/post/{$post->post_name}/edit");
             unset($post->author->user_pass);
@@ -76,9 +76,12 @@ class PostController extends Controller
     public function update(Request $request, int $id)
     {
         if (empty($id)) {
-            return reponse(['msg' => 'ID非法'], 400);
+            return response(['msg' => 'ID非法'], 400);
         }
-        $post   = new Post();
+        $post = Post::find($id);
+        if (empty($post)) {
+            return response(['msg' => '找不到对应的文章'], 400);
+        }
         $fields = $this->fields;
         foreach ($fields as $fields => $deal) {
             if (!isset($request->$fields)) {

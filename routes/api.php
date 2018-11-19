@@ -23,10 +23,12 @@ Route::post('/message', 'MessageLogsController@uploadMessage');
 // Search
 Route::get('/search/user', 'UserController@search');
 
-// Post
-Route::get('/posts', 'PostController@getList');
-Route::get('/post/{id}', 'PostController@show');
+// Post Admin
 Route::get('/posts/admin', 'Admin\PostController@getList');
 Route::get('/post/{id}/admin', 'Admin\PostController@show');
 Route::post('/post/admin', 'Admin\PostController@add');
 Route::post('/post/{id}/admin', 'Admin\PostController@update');
+
+// Post Portal
+Route::get('/posts', 'PostController@getList');
+Route::get('/post/{id}', 'PostController@show');
