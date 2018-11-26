@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Post;
 use App\Traits\NullToString;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -93,5 +95,27 @@ class PostController extends Controller
         }
         $post->save();
         return response(null, 200);
+    }
+
+    public function uploadPic(Request $request)
+    {
+        $path = $request->file('file')->store('public/posts');
+        return response([
+            'msg'    => 'hello uploadPic',
+            'path'   => $path,
+            'assert' => Config::get('app.url') . Storage::url($path),
+        ], 200);
+    }
+
+    public function uploadTorrent(Request $request)
+    {
+        $file    = $request->file('file');
+        $oriName = $file->getClientOriginalName();
+        $path    = $file->store('private/torrent');
+        return response([
+            'msg'  => 'hello upload torrent',
+            'path' => $path,
+            'name' => $file->getClientOriginalName(),
+        ]);
     }
 }

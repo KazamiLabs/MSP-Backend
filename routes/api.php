@@ -28,6 +28,8 @@ Route::get('/posts/admin', 'Admin\PostController@getList');
 Route::get('/post/{id}/admin', 'Admin\PostController@show');
 Route::post('/post/admin', 'Admin\PostController@add');
 Route::post('/post/{id}/admin', 'Admin\PostController@update');
+Route::post('/post/picture/admin', 'Admin\PostController@uploadPic');
+Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
 
 // Post Portal
 Route::get('/posts', 'PostController@getList');
