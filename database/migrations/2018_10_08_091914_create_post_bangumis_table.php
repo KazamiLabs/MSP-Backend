@@ -14,6 +14,7 @@ class CreatePostBangumisTable extends Migration
     public function up()
     {
         Schema::create('post_bangumis', function (Blueprint $table) {
+            $table->increments('id');
             $table->integer('post_id');
             $table->string('filename', 255)->comment('种子名称');
             $table->string('filepath', 255)->comment('种子存储路径');

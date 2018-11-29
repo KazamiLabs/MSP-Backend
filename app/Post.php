@@ -25,6 +25,11 @@ class Post extends Model
         return $this->belongsTo(User::class, 'post_author');
     }
 
+    public function bangumi()
+    {
+        return $this->hasOne();
+    }
+
     public function getCreatedAtAttribute($value)
     {
         $user = Auth::user();

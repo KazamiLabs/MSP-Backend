@@ -109,13 +109,53 @@ class PostController extends Controller
 
     public function uploadTorrent(Request $request)
     {
-        $file    = $request->file('file');
-        $oriName = $file->getClientOriginalName();
-        $path    = $file->store('private/torrent');
+        $file      = $request->file('file');
+        $oriName   = $file->getClientOriginalName();
+        $title     = self::pregTitle($oriName);
+        $groupName = self::pregGroupName($oriName);
+        $path      = $file->store('private/torrent');
         return response([
-            'msg'      => 'hello upload torrent',
-            'filepath' => $path,
-            'filename' => $file->getClientOriginalName(),
+            'msg'        => 'hello upload torrent',
+            'filepath'   => $path,
+            'filename'   => $file->getClientOriginalName(),
+            'title'      => $title,
+            'group_name' => $groupName,
         ]);
+    }
+
+    /**
+     * 标题匹配
+     *
+     * @param string $filename
+     * @return void
+     * Kanzaki Tsukasa
+     */
+    private static function pregTitle(string $filename)
+    {
+        $regx    = '/(?<=】).+?(?=\[)|(?<=\]).+?(?=\(|\[)/u';
+        $matches = [];
+        if (preg_match($regx, $filename, $matches)) {
+            return trim($matches[0]);
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * 发布身份匹配
+     *
+     * @param string $filename
+     * @return void
+     * Kanzaki Tsukasa
+     */
+    private static function pregGroupName(string $filename)
+    {
+        $regx    = '/(?<=\[)[\w|-]+(?=\])|(?<=【)\w+(?=】)/u';
+        $matches = [];
+        if (preg_match($regx, $filename, $matches)) {
+            return trim($matches[0]);
+        } else {
+            return '';
+        }
     }
 }
