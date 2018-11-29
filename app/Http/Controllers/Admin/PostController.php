@@ -87,10 +87,12 @@ class PostController extends Controller
     public function uploadTorrent(Request $request)
     {
         $file      = $request->file('file');
+        $s_name    = hash_file('SHA1', $file->getRealPath());
         $oriName   = $file->getClientOriginalName();
+        $ext       = pathinfo($oriName, PATHINFO_EXTENSION);
         $title     = self::pregTitle($oriName);
         $groupName = self::pregGroupName($oriName);
-        $path      = $file->store('private/torrent');
+        $path      = $file->storeAs('private/torrent', "{$s_name}.{$ext}");
         return response([
             'msg'        => 'hello upload torrent',
             'filepath'   => $path,

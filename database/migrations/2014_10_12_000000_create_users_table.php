@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateUsersTable extends Migration
@@ -17,17 +18,17 @@ class CreateUsersTable extends Migration
         $defaultTz = Config::get('app.timezone');
         Schema::create('users', function (Blueprint $table) use ($defaultTz) {
             $table->increments('id');
-            $table->string('user_login', 60);
-            $table->string('user_pass');
-            $table->string('user_nicename', 50);
-            $table->string('user_email', 100)->unique();
-            $table->string('user_url', 100);
+            $table->string('name');
+            $table->string('email', 191)->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->string('nicename', 50)->default('');
+            $table->string('person_index', 100)->default('');
             $table->string('timezone')->default($defaultTz);
-            $table->dateTime('user_registered');
-            $table->string('user_activation_key', 255);
-            $table->integer('user_status');
-            $table->string('display_name', 250);
-            // $table->rememberToken();
+            $table->dateTime('registered')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->string('activation_key', 255)->default('');
+            $table->integer('status')->default(1);
+            $table->rememberToken();
             $table->timestamps();
         });
     }

@@ -25,3 +25,7 @@ Route::get('/phpinfo', function () {
     $contents = ob_get_clean();
     return $contents;
 });
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
