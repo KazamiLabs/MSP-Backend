@@ -15,11 +15,11 @@ class CreatePostBangumisTable extends Migration
     {
         Schema::create('post_bangumis', function (Blueprint $table) {
             $table->integer('post_id');
-            $table->string('filename', 255);
-            $table->string('filepath', 255);
-            $table->string('author', 255);
-            $table->string('title', 255);
-            $table->string('year', 4);
+            $table->string('filename', 255)->comment('种子名称');
+            $table->string('filepath', 255)->comment('种子存储路径');
+            $table->string('author', 255)->comment('识别的发布组织');
+            $table->string('title', 255)->comment('识别的标题');
+            $table->string('year', 4)->comment('番剧年份');
             $table->timestamps();
         });
     }

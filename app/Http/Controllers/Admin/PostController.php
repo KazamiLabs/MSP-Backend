@@ -113,9 +113,9 @@ class PostController extends Controller
         $oriName = $file->getClientOriginalName();
         $path    = $file->store('private/torrent');
         return response([
-            'msg'  => 'hello upload torrent',
-            'path' => $path,
-            'name' => $file->getClientOriginalName(),
+            'msg'      => 'hello upload torrent',
+            'filepath' => $path,
+            'filename' => $file->getClientOriginalName(),
         ]);
     }
 }
