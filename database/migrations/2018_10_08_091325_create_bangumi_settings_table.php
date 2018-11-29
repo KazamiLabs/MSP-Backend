@@ -13,7 +13,7 @@ class CreateBangumiSettingsTable extends Migration
      */
     public function up()
     {
-        Schema::create('bangumi_setting', function (Blueprint $table) {
+        Schema::create('bangumi_settings', function (Blueprint $table) {
             $table->increments('id');
             $table->string('sitename', 255);
             $table->string('sitedriver', 255);
@@ -31,6 +31,6 @@ class CreateBangumiSettingsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('bangumi_setting');
+        Schema::dropIfExists('bangumi_settings');
     }
 }

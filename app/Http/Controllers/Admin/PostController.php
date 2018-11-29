@@ -2,39 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Bangumi;
 use App\Http\Controllers\Controller;
 use App\Post;
 use App\Traits\NullToString;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    private $fields = [
-        'post_author'           => '',
-        'post_content'          => '',
-        'post_title'            => '',
-        'post_excerpt'          => '',
-        'post_status'           => '',
-        'comment_status'        => '',
-        'ping_status'           => '',
-        'post_password'         => '',
-        'post_name'             => '',
-        'to_ping'               => '',
-        'pinged'                => '',
-        'post_date'             => '',
-        'post_date_gmt'         => '',
-        'post_modified'         => '',
-        'post_modified_gmt'     => '',
-        'post_content_filtered' => '',
-        'post_parent'           => '',
-        'guid'                  => '',
-        'menu_order'            => '',
-        'post_type'             => '',
-        'post_mime_type'        => '',
-    ];
-
     //
     public function show($id)
     {
@@ -43,6 +21,7 @@ class PostController extends Controller
         if ($post) {
             unset($post->author->user_pass);
             unset($post->post_password);
+            $post->bangumi;
         }
         return $post;
     }
@@ -61,17 +40,12 @@ class PostController extends Controller
 
     public function add(Request $request)
     {
-        $post   = new Post();
-        $fields = $this->fields;
-        foreach ($fields as $fields => $deal) {
-            if (!isset($request->$fields)) {
-                continue;
-            }
-            if (empty($deal)) {
-                $post->$fields = $request->$fields;
-            }
-        }
+        $post   = new Post($request->toArray());
+        $author = User::inRandomOrder()->first();
+        $post->author()->associate($author);
         $post->save();
+        $bangumi = new Bangumi($request->bangumi);
+        $post->bangumi()->save($bangumi);
         return response(null, 201);
     }
 
@@ -84,15 +58,18 @@ class PostController extends Controller
         if (empty($post)) {
             return response(['msg' => '找不到对应的文章'], 400);
         }
-        $fields = $this->fields;
-        foreach ($fields as $fields => $deal) {
-            if (!isset($request->$fields)) {
-                continue;
-            }
-            if (empty($deal)) {
-                $post->$fields = $request->$fields;
-            }
-        }
+        // $fields = $post->getFillable();
+        // foreach ($fields as $field) {
+        //     if (!isset($request->$field)) {
+        //         continue;
+        //     }
+        //     if (empty($deal)) {
+        //         $post->$field = $request->$field;
+        //     }
+        // }
+        $post->fill($request->toArray());
+        $bangumi = $post->bangumi->fill($request->bangumi);
+        $bangumi->save();
         $post->save();
         return response(null, 200);
     }

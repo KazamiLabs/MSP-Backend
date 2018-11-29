@@ -2,11 +2,16 @@
 
 namespace App;
 
+use App\Post;
 use Illuminate\Database\Eloquent\Model;
 
 class Bangumi extends Model
 {
     //
-    protected $table   = 'post_bangumis';
-    public $timestamps = false;
+    protected $fillable = ['filename', 'filepath', 'group_name', 'title', 'year'];
+
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
 }

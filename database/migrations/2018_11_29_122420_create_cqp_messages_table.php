@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMessageLogsTable extends Migration
+class CreateCqpMessagesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateMessageLogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('message_logs', function (Blueprint $table) {
+        Schema::create('cqp_messages', function (Blueprint $table) {
             $table->increments('id');
             $table->string('user_id', 20);
             $table->string('anonymous', 255)->nullable();
@@ -39,6 +39,6 @@ class CreateMessageLogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('message_logs');
+        Schema::dropIfExists('cqp_messages');
     }
 }
