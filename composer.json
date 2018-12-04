@@ -17,7 +17,8 @@
         "laravel/framework": "5.6.*",
         "laravel/tinker": "^1.0",
         "php-ai/php-ml": "^0.6.2",
-        "rmccue/requests": "^1.7"
+        "rmccue/requests": "^1.7",
+        "tymon/jwt-auth": "1.*@rc"
     },
     "require-dev": {
         "doctrine/dbal": "^2.8",

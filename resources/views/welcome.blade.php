@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>Mabors!</title>
 
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet" type="text/css">
@@ -49,6 +49,10 @@
                 font-size: 84px;
             }
 
+            .sub-title {
+                font-size: 34px;
+            }
+
             .links > a {
                 color: #636b6f;
                 padding: 0 25px;
@@ -61,6 +65,9 @@
 
             .m-b-md {
                 margin-bottom: 30px;
+            }
+            .no-display {
+                display: none;
             }
         </style>
     </head>
@@ -79,10 +86,13 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Laravel
+                    Maboroshi Subtitle Group Portal
+                </div>
+                <div class="sub-title m-b-md">
+                    Power by Laravel Framework
                 </div>
 
-                <div class="links">
+                <div class="links no-display">
                     <a href="https://laravel.com/docs">Documentation</a>
                     <a href="https://laracasts.com">Laracasts</a>
                     <a href="https://laravel-news.com">News</a>
