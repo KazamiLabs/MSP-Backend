@@ -41,7 +41,7 @@ class PostController extends Controller
     public function add(Request $request)
     {
         $post   = new Post($request->toArray());
-        $author = User::inRandomOrder()->first();
+        $author = auth('api')->user();
         $post->author()->associate($author);
         $post->save();
         $bangumi = new Bangumi($request->bangumi);

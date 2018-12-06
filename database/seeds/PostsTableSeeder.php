@@ -16,7 +16,7 @@ class PostsTableSeeder extends Seeder
         //     $posts = factory(App\Post::class, 1000);
         //     $posts->create();
         // }
-        $posts = factory(App\Post::class, 1000);
+        $posts = factory(App\Post::class, 10);
         $posts->create();
     }
 }

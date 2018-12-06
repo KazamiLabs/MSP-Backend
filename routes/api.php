@@ -27,21 +27,28 @@ Route::get('/search/user', 'UserController@search');
 Route::group([
     'prefix' => 'auth',
 ], function ($router) {
-
-    Route::post('login', 'Admin\AuthController@login');
-    Route::post('logout', 'Admin\AuthController@logout');
-    Route::post('refresh', 'Admin\AuthController@refresh');
-    Route::get('me', 'Admin\AuthController@me');
-
+    $router->post('login', 'Admin\AuthController@login');
+    $router->post('logout', 'Admin\AuthController@logout');
+    $router->post('refresh', 'Admin\AuthController@refresh');
+    $router->get('me', 'Admin\AuthController@me');
 });
 
+Route::middleware('refresh.token')->group(function ($router) {
+    // Post Admin
+    $router->get('/posts/admin', 'Admin\PostController@getList');
+    $router->get('/post/{id}/admin', 'Admin\PostController@show');
+    $router->post('/post/admin', 'Admin\PostController@add');
+    $router->post('/post/{id}/admin', 'Admin\PostController@update');
+    $router->post('/post/picture/admin', 'Admin\PostController@uploadPic');
+    $router->post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
+});
 // Post Admin
-Route::get('/posts/admin', 'Admin\PostController@getList')->middleware('auth');
-Route::get('/post/{id}/admin', 'Admin\PostController@show')->middleware('auth');
-Route::post('/post/admin', 'Admin\PostController@add')->middleware('auth');
-Route::post('/post/{id}/admin', 'Admin\PostController@update')->middleware('auth');
-Route::post('/post/picture/admin', 'Admin\PostController@uploadPic')->middleware('auth');
-Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent')->middleware('auth');
+// Route::get('/posts/admin', 'Admin\PostController@getList');
+// Route::get('/post/{id}/admin', 'Admin\PostController@show');
+// Route::post('/post/admin', 'Admin\PostController@add');
+// Route::post('/post/{id}/admin', 'Admin\PostController@update');
+// Route::post('/post/picture/admin', 'Admin\PostController@uploadPic');
+// Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
 
 // Post Portal
 Route::get('/posts', 'PostController@getList');

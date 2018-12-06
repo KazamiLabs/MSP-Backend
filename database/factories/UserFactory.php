@@ -1,6 +1,7 @@
 <?php
 
 use Faker\Generator as Faker;
+use Illuminate\Support\Facades\Hash;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,18 +15,15 @@ use Faker\Generator as Faker;
  */
 
 $factory->define(App\User::class, function (Faker $faker) {
-    $name = $faker->name;
+    $name     = $faker->name;
+    $userName = $faker->userName;
     return [
-        'user_login'          => $name,
-        'user_pass'           => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
-        'user_nicename'       => $name,
-        'user_email'          => $faker->unique()->safeEmail,
-        'user_url'            => '',
-        'timezone'            => $faker->timezone,
-        'user_registered'     => date("Y-m-d H:i:s"),
-        'user_activation_key' => '',
-        'user_status'         => 0,
-        'display_name'        => $name,
-        // 'remember_token' => str_random(10),
+        'name'     => $userName,
+        'email'    => $faker->unique()->safeEmail,
+        'password' => Hash::make('secret'),
+        'nicename' => $name,
+        'avatar'   => '',
+        'timezone' => $faker->timezone,
+        'status'   => 1,
     ];
 });

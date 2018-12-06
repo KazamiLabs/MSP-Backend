@@ -23,10 +23,12 @@ class CreateUsersTable extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('nicename', 50)->default('');
+            $table->string('avatar')->nullable();
             $table->string('person_index', 100)->default('');
             $table->string('timezone')->default($defaultTz);
             $table->dateTime('registered')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->string('activation_key', 255)->default('');
+            $table->tinyInteger('is_admin')->default(0);
             $table->integer('status')->default(1);
             $table->rememberToken();
             $table->timestamps();
