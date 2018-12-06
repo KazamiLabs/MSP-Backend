@@ -87,7 +87,7 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Maboroshi Subtitle Group Portal
+                    Hello Mabors!
                 </div>
                 <div class="sub-title m-b-md">
                     Power by Laravel Framework
