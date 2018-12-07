@@ -7,7 +7,7 @@ $factory->define(App\Post::class, function (Faker $faker) {
     $title       = $faker->text(20);
     $post_status = [
         0 => 'inherit',
-        1 => 'publish',
+        1 => 'published',
         2 => 'draft',
     ];
     $common_status = [

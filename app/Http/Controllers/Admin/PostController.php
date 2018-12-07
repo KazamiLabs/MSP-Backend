@@ -29,7 +29,7 @@ class PostController extends Controller
     public function getList(Request $request)
     {
         $limit = $request->get('limit', 15);
-        $posts = Post::orderBy('id', 'desc')->paginate($limit);
+        $posts = Post::where('post_status', '!=', 'inherit')->orderBy('id', 'desc')->paginate($limit);
         foreach ($posts as $post) {
             $post->access_api = url("/api/post/{$post->post_name}/edit");
             unset($post->author->user_pass);
