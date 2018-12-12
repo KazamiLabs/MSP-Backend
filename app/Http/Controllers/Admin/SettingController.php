@@ -13,7 +13,12 @@ class SettingController extends Controller
     public function bangumiSettings(Request $request)
     {
         $limit    = $request->get('limit', 15);
-        $settings = BangumiSetting::select('id', 'sitedriver', 'username', 'status')->paginate($limit);
+        $settings = BangumiSetting::select('id', 'sitename', 'sitedriver', 'username', 'status')->paginate($limit);
         return $settings;
+    }
+
+    public function updateBangumiSettings(Request $request, $id)
+    {
+
     }
 }

@@ -48,6 +48,7 @@ Route::middleware('refresh.token')->group(function ($router) {
     $router->post('/user/{id}/admin', 'Admin\UserController@update');
     // Settings
     $router->get('/bangumi-settings/admin', 'Admin\SettingController@bangumiSettings');
+    $router->post('/bangumi-setting/{id}/admin', 'Admin\SettingController@updateBangumiSettings');
 });
 // Posts Manage
 // Route::get('/posts/admin', 'Admin\PostController@getList');
