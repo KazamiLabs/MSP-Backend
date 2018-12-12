@@ -11,8 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(CrontabsTableSeeder::class);
-        $this->call(UsersTableSeeder::class);
-        $this->call(PostsTableSeeder::class);
+        $this->call([
+            CrontabsTableSeeder::class,
+            UsersTableSeeder::class,
+            PostsTableSeeder::class,
+            BangumiSettingsTableSeeder::class,
+        ]);
     }
 }

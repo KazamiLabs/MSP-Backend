@@ -22,4 +22,13 @@ class UserController extends Controller
         }
         return $userM->select('id', 'user_nicename')->get();
     }
+
+    public function getList(Request $request)
+    {
+        $limit = $request->get('limit', 15);
+        $users = User::select('id', 'name', 'email', 'nicename', 'avatar', 'timezone', 'registered', 'is_admin', 'status')
+            ->orderBy('id', 'desc')
+            ->paginate($limit);
+        return $users;
+    }
 }

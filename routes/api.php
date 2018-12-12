@@ -34,22 +34,29 @@ Route::group([
 });
 
 Route::middleware('refresh.token')->group(function ($router) {
-    // Post Admin
+    // Posts Manage
     $router->get('/posts/admin', 'Admin\PostController@getList');
     $router->get('/post/{id}/admin', 'Admin\PostController@show');
     $router->post('/post/admin', 'Admin\PostController@add');
     $router->post('/post/{id}/admin', 'Admin\PostController@update');
-    $router->post('/post/picture/admin', 'Admin\PostController@uploadPic');
-    $router->post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
+    // $router->post('/post/picture/admin', 'Admin\PostController@uploadPic');
+    // $router->post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
+    // Users Manage
+    $router->get('/users/admin', 'Admin\UserController@getList');
+    $router->get('/user/{id}/admin', 'Admin\UserController@show');
+    $router->post('/user/admin', 'Admin\UserController@add');
+    $router->post('/user/{id}/admin', 'Admin\UserController@update');
+    // Settings
+    $router->get('/bangumi-settings/admin', 'Admin\SettingController@bangumiSettings');
 });
-// Post Admin
+// Posts Manage
 // Route::get('/posts/admin', 'Admin\PostController@getList');
 // Route::get('/post/{id}/admin', 'Admin\PostController@show');
 // Route::post('/post/admin', 'Admin\PostController@add');
 // Route::post('/post/{id}/admin', 'Admin\PostController@update');
-// Route::post('/post/picture/admin', 'Admin\PostController@uploadPic');
-// Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
+Route::post('/post/picture/admin', 'Admin\PostController@uploadPic');
+Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
 
-// Post Portal
+// Posts List
 Route::get('/posts', 'PostController@getList');
 Route::get('/post/{id}', 'PostController@show');
