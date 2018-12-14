@@ -35,4 +35,15 @@ class SettingController extends Controller
         $setting->save();
         return response([], 200);
     }
+
+    public function deleteBangumiSettings(Request $request, $id)
+    {
+        $setting = BangumiSetting::find($id);
+        if (is_null($setting)) {
+            Log::info('找不到同步账户', ['id' => $id, 'action' => 'updateBangumiSettings']);
+            abort(404, 'Settings not found');
+        }
+        $setting->delete();
+        return response([], 204);
+    }
 }

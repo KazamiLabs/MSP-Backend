@@ -4,9 +4,11 @@ namespace App;
 
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BangumiSetting extends Model
 {
+    use SoftDeletes;
     //
     protected $fillable = [
         'sitedriver',

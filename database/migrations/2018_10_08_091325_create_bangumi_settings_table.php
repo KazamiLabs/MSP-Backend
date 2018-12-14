@@ -18,9 +18,10 @@ class CreateBangumiSettingsTable extends Migration
             $table->string('sitename', 255);
             $table->string('sitedriver', 255);
             $table->string('username', 255);
-            $table->string('password', 255);
+            $table->text('password');
             $table->boolean('status')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
