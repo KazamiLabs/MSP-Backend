@@ -29,7 +29,7 @@ Route::group([
 ], function ($router) {
     $router->post('login', 'Admin\AuthController@login');
     $router->post('logout', 'Admin\AuthController@logout');
-    $router->post('refresh', 'Admin\AuthController@refresh');
+    $router->get('refresh', 'Admin\AuthController@refresh');
     $router->get('me', 'Admin\AuthController@me');
 });
 

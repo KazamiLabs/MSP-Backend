@@ -26,7 +26,7 @@ class UsersTableSeeder extends Seeder
         $tks->save();
 
         $miemie           = new User();
-        $miemie->name     = 'Eustia';
+        $miemie->name     = 'eustia';
         $miemie->email    = '767471286@qq.com';
         $miemie->password = Hash::make('secret');
         $miemie->nicename = '尤斯蒂娅';

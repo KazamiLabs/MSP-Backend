@@ -17,7 +17,7 @@ return [
     'allowedOriginsPatterns' => [],
     'allowedHeaders'         => ['*'],
     'allowedMethods'         => ['*'],
-    'exposedHeaders'         => ['X-Token'],
+    'exposedHeaders'         => ['X-Token', 'Authorization'],
     'maxAge'                 => 0,
 
 ];
