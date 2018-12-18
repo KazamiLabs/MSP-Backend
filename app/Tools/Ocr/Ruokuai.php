@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tool\Ocr;
+namespace App\Tools\Ocr;
 
 class Ruokuai
 {

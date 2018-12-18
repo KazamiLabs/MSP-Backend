@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tool\Time;
+namespace App\Tools\Time;
 
 class Convert
 {
