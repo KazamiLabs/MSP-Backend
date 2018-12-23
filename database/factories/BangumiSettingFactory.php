@@ -11,16 +11,17 @@ $factory->define(App\BangumiSetting::class, function (Faker $faker) {
         ['Nyaa', 'Nyaa'],
         ['爱恋动漫BT下载', 'Kisssub'],
     ];
-    $username  = $faker->userName;
-    $password  = $faker->password;
-    $siteIndex = rand(0, count($sites) - 1);
-    $site      = $sites[$siteIndex];
+    $passwordList = ['secret', 'woaiyeqi', 'bakamie', 'maborsSaiko'];
+    $username     = $faker->userName;
+    $password     = $passwordList[rand(0, count($passwordList) - 1)];
+    $siteIndex    = rand(0, count($sites) - 1);
+    $site         = $sites[$siteIndex];
     return [
         //
         'sitename'   => $site[0],
         'sitedriver' => $site[1],
         'username'   => $username,
-        'password'   => app()->make(Encrypter::class)->encrypt($password, false),
+        'password'   => $password,
         'status'     => true,
     ];
 });

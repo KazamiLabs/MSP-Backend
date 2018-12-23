@@ -1,5 +1,7 @@
 <?php
 
+use App\Bangumi;
+use App\Post;
 use Illuminate\Database\Seeder;
 
 class PostsTableSeeder extends Seeder
@@ -16,7 +18,9 @@ class PostsTableSeeder extends Seeder
         //     $posts = factory(App\Post::class, 1000);
         //     $posts->create();
         // }
-        $posts = factory(App\Post::class, 10);
-        $posts->create();
+        $posts = factory(Post::class, 10);
+        $posts->create()->each(function ($post) {
+            $post->bangumi()->save(factory(Bangumi::class)->make());
+        });
     }
 }
