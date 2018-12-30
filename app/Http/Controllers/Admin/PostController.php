@@ -16,8 +16,7 @@ class PostController extends Controller
     //
     public function show($id)
     {
-        $post = Post::where('id', $id)
-            ->first();
+        $post = Post::findOrFail($id);
         if ($post) {
             unset($post->author->user_pass);
             unset($post->post_password);
@@ -100,6 +99,26 @@ class PostController extends Controller
             'title'      => $title,
             'group_name' => $groupName,
         ]);
+    }
+
+    public function changeStatus(Request $request, int $id)
+    {
+        $post   = Post::findOrFail($id);
+        $status = $request->post('status');
+
+        $post->post_status = $status;
+        $post->save();
+        return response([
+            'status' => $status,
+            'id'     => $id,
+        ]);
+    }
+
+    public function deletePost(Request $request, int $id)
+    {
+        $post = Post::findOrFail($id);
+        $post->delete();
+        return response([], 204);
     }
 
     /**

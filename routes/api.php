@@ -39,6 +39,8 @@ Route::middleware('refresh.token')->group(function ($router) {
     $router->get('/post/{id}/admin', 'Admin\PostController@show');
     $router->post('/post/admin', 'Admin\PostController@add');
     $router->post('/post/{id}/admin', 'Admin\PostController@update');
+    $router->post('/post/{id}/admin/status', 'Admin\PostController@changeStatus');
+    $router->delete('/post/{id}/admin', 'Admin\PostController@deletePost');
     // $router->post('/post/picture/admin', 'Admin\PostController@uploadPic');
     // $router->post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
     // Users Manage
@@ -50,6 +52,7 @@ Route::middleware('refresh.token')->group(function ($router) {
     $router->get('/bangumi-settings/admin', 'Admin\SettingController@bangumiSettings');
     // $router->post('/bangumi-setting/admin', '');
     $router->post('/bangumi-setting/{id}/admin', 'Admin\SettingController@updateBangumiSettings');
+    $router->post('/bangumi-setting/{id}/admin/status', 'Admin\SettingController@changeBangumiSettingStatus');
     $router->delete('/bangumi-setting/{id}/admin', 'Admin\SettingController@deleteBangumiSettings');
 });
 // Posts Manage

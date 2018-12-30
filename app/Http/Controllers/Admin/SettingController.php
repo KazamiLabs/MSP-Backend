@@ -20,7 +20,7 @@ class SettingController extends Controller
 
     public function updateBangumiSettings(Request $request, $id)
     {
-        $setting = BangumiSetting::find($id);
+        $setting = BangumiSetting::findOrFail($id);
         if (is_null($setting)) {
             Log::info('找不到同步账户', ['id' => $id, 'action' => 'updateBangumiSettings']);
             abort(404, 'Settings not found');
@@ -32,6 +32,16 @@ class SettingController extends Controller
         ]);
 
         $setting->fill($request->toArray());
+        $setting->save();
+        return response([], 200);
+    }
+
+    public function changeBangumiSettingStatus(Request $request, int $id)
+    {
+        $setting = BangumiSetting::findOrFail($id);
+        $status  = $request->post('status');
+
+        $setting->status = $status;
         $setting->save();
         return response([], 200);
     }
