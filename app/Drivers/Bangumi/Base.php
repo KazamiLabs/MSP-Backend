@@ -1,6 +1,8 @@
 <?php
 namespace App\Drivers\Bangumi;
 
+use App\BangumiTransferLog;
+
 abstract class Base
 {
     private $session         = null;
@@ -69,9 +71,6 @@ abstract class Base
 
     final public function callback()
     {
-        if (empty($this->callbackaddr)) {
-            return;
-        }
         $require = ['post_id', 'site', 'site_id', 'log_file'];
         foreach ($require as $field) {
             if (isset($this->callback[$field])) {
@@ -82,8 +81,9 @@ abstract class Base
 
         $data               = $this->callback;
         $data['sitedriver'] = \get_called_class();
-        $response           = $this->getSession()->post($this->callbackaddr, [], $data);
-        echo "Wordpress:", $response->body, PHP_EOL;
+        $transferLog        = new BangumiTransferLog();
+        $transferLog->fill($data);
+        $transferLog->save();
     }
 
     final public function loadCookieStr(): string

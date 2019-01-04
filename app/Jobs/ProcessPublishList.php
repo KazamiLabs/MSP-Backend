@@ -55,8 +55,9 @@ class ProcessPublishList implements ShouldQueue
         $driver->content      = $post->post_content;
         $driver->bangumi      = $post->bangumi->title;
         $driver->torrent_name = $post->bangumi->filename;
-        $driver->torrent_path = $post->bangumi->filepath;
+        $driver->torrent_path = \storage_path("app/{$post->bangumi->filepath}");
         $driver->login();
         $driver->upload();
+        $driver->callback();
     }
 }

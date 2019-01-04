@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "639c1e611092f249d95204f3cfbd2736",
+    "content-hash": "59c29bd3bbd7debb2436d8e242097d70",
     "packages": [
         {
             "name": "3f/converter",
@@ -165,6 +165,51 @@
                 "laravel"
             ],
             "time": "2018-09-06T13:20:53+00:00"
+        },
+        {
+            "name": "bhutanio/torrent-bencode",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bhutanio/torrent-bencode.git",
+                "reference": "6209c23a83b234bc07661df53d6b810321bbd7b4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bhutanio/torrent-bencode/zipball/6209c23a83b234bc07661df53d6b810321bbd7b4",
+                "reference": "6209c23a83b234bc07661df53d6b810321bbd7b4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Bhutanio": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "abi",
+                    "homepage": "http://abi.io"
+                }
+            ],
+            "description": "PHP Library for decoding and encoding BitTorrent BEncoded data",
+            "homepage": "https://github.com/bhutanio/torrent-bencode",
+            "keywords": [
+                "bdecode",
+                "bencode",
+                "bittorrent",
+                "decode",
+                "encode",
+                "torrent"
+            ],
+            "time": "2018-09-27T23:45:35+00:00"
         },
         {
             "name": "bupt1987/html-parser",
@@ -5665,6 +5710,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "bhutanio/torrent-bencode": 20,
         "tymon/jwt-auth": 5
     },
     "prefer-stable": true,

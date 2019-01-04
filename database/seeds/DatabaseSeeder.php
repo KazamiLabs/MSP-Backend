@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CrontabsTableSeeder::class,
             UsersTableSeeder::class,
-            PostsTableSeeder::class,
-            BangumiSettingsTableSeeder::class,
+            // PostsTableSeeder::class,
+            // BangumiSettingsTableSeeder::class,
         ]);
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePostBangumiTransferlogsTable extends Migration
+class CreateBangumiTransferLogsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreatePostBangumiTransferlogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('post_bangumi_transferlogs', function (Blueprint $table) {
+        Schema::create('bangumi_transfer_logs', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('post_id');
             $table->string('site', 255);
@@ -32,6 +32,6 @@ class CreatePostBangumiTransferlogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('post_bangumi_transferlogs');
+        Schema::dropIfExists('bangumi_transfer_logs');
     }
 }

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Bangumi;
+use App\BangumiSetting;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPublishList;
 use App\Post;
 use App\Traits\NullToString;
 use App\User;
@@ -45,6 +47,11 @@ class PostController extends Controller
         $post->save();
         $bangumi = new Bangumi($request->bangumi);
         $post->bangumi()->save($bangumi);
+        // 队列分发
+        $drivers = BangumiSetting::where('status', 1)->get();
+        foreach ($drivers as $driver) {
+            ProcessPublishList::dispatch($post, $driver);
+        }
         return response(null, 201);
     }
 
@@ -57,15 +64,6 @@ class PostController extends Controller
         if (empty($post)) {
             return response(['msg' => '找不到对应的文章'], 400);
         }
-        // $fields = $post->getFillable();
-        // foreach ($fields as $field) {
-        //     if (!isset($request->$field)) {
-        //         continue;
-        //     }
-        //     if (empty($deal)) {
-        //         $post->$field = $request->$field;
-        //     }
-        // }
         $post->fill($request->toArray());
         $bangumi = $post->bangumi->fill($request->bangumi);
         $bangumi->save();
@@ -86,7 +84,7 @@ class PostController extends Controller
     public function uploadTorrent(Request $request)
     {
         $file      = $request->file('file');
-        $s_name    = hash_file('SHA1', $file->getRealPath());
+        $s_name    = \torrent_hash($file->getRealPath());
         $oriName   = $file->getClientOriginalName();
         $ext       = pathinfo($oriName, PATHINFO_EXTENSION);
         $title     = self::pregTitle($oriName);
