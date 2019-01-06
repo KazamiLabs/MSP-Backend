@@ -36,6 +36,7 @@ Route::group([
 Route::middleware('refresh.token')->group(function ($router) {
     // Posts Manage
     $router->get('/posts/admin', 'Admin\PostController@getList');
+    $router->get('/post/queues/admin', 'Admin\PostController@queues');
     $router->get('/post/{id}/admin', 'Admin\PostController@show');
     $router->post('/post/admin', 'Admin\PostController@add');
     $router->post('/post/{id}/admin', 'Admin\PostController@update');
