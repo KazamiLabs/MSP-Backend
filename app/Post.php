@@ -53,6 +53,11 @@ class Post extends Model
         return $this->hasOne(Bangumi::class);
     }
 
+    public function bangumiTransferLogs()
+    {
+        return $this->hasMany(BangumiTransferLog::class);
+    }
+
     public function getCreatedAtAttribute($value)
     {
         $user = Auth::user();
