@@ -14,4 +14,14 @@ class BangumiTransferLog extends Model
     {
         return $this->belongsTo(Post::class);
     }
+
+    public function setLogFileAttribute($filepath)
+    {
+        $this->attributes['log_file'] = str_replace(\storage_path() . DIRECTORY_SEPARATOR, '', $filepath);
+    }
+
+    public function getLogFileAttribute($filepath)
+    {
+        return \storage_path($filepath);
+    }
 }

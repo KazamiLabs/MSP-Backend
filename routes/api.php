@@ -45,7 +45,8 @@ Route::middleware('refresh.token')->group(function ($router) {
     // $router->post('/post/picture/admin', 'Admin\PostController@uploadPic');
     // $router->post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
     // Bangumi
-    $router->get('/bangumi/{post_id}/transfer-log', 'Admin\BangumiController@transferLog');
+    $router->get('/bangumi/{post_id}/transfer-log/admin', 'Admin\BangumiController@transferLog');
+    $router->get('/bangumi/{post_id}/transfer-log-raw/admin', 'Admin\BangumiController@transferLogRaw');
     // Users Manage
     $router->get('/users/admin', 'Admin\UserController@getList');
     $router->get('/user/{id}/admin', 'Admin\UserController@show');
