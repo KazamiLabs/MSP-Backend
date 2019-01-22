@@ -56,28 +56,28 @@ class ProcessPublishList implements ShouldQueue
         ]));
 
         // 开始处理
-        // $class = "\\App\\Drivers\\Bangumi\\{$setting->sitedriver}";
-        // if (!class_exists($class)) {
-        //     throw new \Exception("Class not exists! {$class}");
-        // }
-        // $driver = new $class(
-        //     $setting->username,
-        //     $setting->password,
-        //     ''
-        // );
-        // $driver->post_id      = $post->id;
-        // $driver->author       = $post->post_author;
-        // $driver->title        = $post->post_title;
-        // $driver->content      = $post->post_content;
-        // $driver->bangumi      = $post->bangumi->title;
-        // $driver->torrent_name = $post->bangumi->filename;
-        // $driver->torrent_path = \storage_path("app/{$post->bangumi->filepath}");
-        // $driver->login();
-        // $driver->upload();
-        // $driver->callback();
+        $class = "\\App\\Drivers\\Bangumi\\{$setting->sitedriver}";
+        if (!class_exists($class)) {
+            throw new \Exception("Class not exists! {$class}");
+        }
+        $driver = new $class(
+            $setting->username,
+            $setting->password,
+            ''
+        );
+        $driver->post_id      = $post->id;
+        $driver->author       = $post->post_author;
+        $driver->title        = $post->post_title;
+        $driver->content      = $post->post_content;
+        $driver->bangumi      = $post->bangumi->title;
+        $driver->torrent_name = $post->bangumi->filename;
+        $driver->torrent_path = \storage_path("app/{$post->bangumi->filepath}");
+        $driver->login();
+        $driver->upload();
+        $driver->callback();
 
-        $time = rand(30, 60);
-        sleep($time);
+        // $time = rand(30, 60);
+        // sleep($time);
 
         // 标记队列为已完成
         Redis::lrem(PostController::SHOW_QUEUE_KEY, 0, json_encode([

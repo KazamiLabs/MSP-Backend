@@ -20,8 +20,8 @@ class BangumiTransferLog extends Model
         $this->attributes['log_file'] = str_replace(\storage_path() . DIRECTORY_SEPARATOR, '', $filepath);
     }
 
-    public function getLogFileAttribute($filepath)
+    public function getLogFilePathAttribute()
     {
-        return \storage_path($filepath);
+        return \storage_path($this->log_file);
     }
 }

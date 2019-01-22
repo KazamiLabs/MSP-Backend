@@ -25,7 +25,7 @@ class BangumiController extends Controller
         $log      = BangumiTransferLog::findOrFail($id);
         $filepath = $log->log_file;
         // $contents = Storage::get($filepath);
-        $contents = file_get_contents($log->log_file);
+        $contents = file_get_contents($log->log_file_path);
         return response(['contents' => $contents]);
     }
 }
