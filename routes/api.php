@@ -26,38 +26,38 @@ Route::get('/search/user', 'UserController@search');
 // Auth Admin
 Route::group([
     'prefix' => 'auth',
-], function ($router) {
-    $router->post('login', 'Admin\AuthController@login');
-    $router->post('logout', 'Admin\AuthController@logout');
-    $router->get('refresh', 'Admin\AuthController@refresh');
-    $router->get('me', 'Admin\AuthController@me');
+], function ($route) {
+    $route->post('login', 'Admin\AuthController@login');
+    $route->post('logout', 'Admin\AuthController@logout');
+    $route->get('refresh', 'Admin\AuthController@refresh');
+    $route->get('me', 'Admin\AuthController@me');
 });
 
-Route::middleware('refresh.token')->group(function ($router) {
+Route::middleware('refresh.token')->namespace('Admin')->group(function ($route) {
     // Posts Manage
-    $router->get('/posts/admin', 'Admin\PostController@getList');
-    $router->get('/post/queues/admin', 'Admin\PostController@queues');
-    $router->get('/post/{id}/admin', 'Admin\PostController@show');
-    $router->post('/post/admin', 'Admin\PostController@add');
-    $router->post('/post/{id}/admin', 'Admin\PostController@update');
-    $router->post('/post/{id}/admin/status', 'Admin\PostController@changeStatus');
-    $router->delete('/post/{id}/admin', 'Admin\PostController@deletePost');
-    // $router->post('/post/picture/admin', 'Admin\PostController@uploadPic');
-    // $router->post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
+    $route->get('/posts/admin', 'PostController@getList');
+    $route->get('/post/queues/admin', 'PostController@queues');
+    $route->get('/post/{id}/admin', 'PostController@show');
+    $route->post('/post/admin', 'PostController@add');
+    $route->post('/post/{id}/admin', 'PostController@update');
+    $route->post('/post/{id}/admin/status', 'PostController@changeStatus');
+    $route->delete('/post/{id}/admin', 'PostController@deletePost');
+    // $route->post('/post/picture/admin', 'PostController@uploadPic');
+    // $route->post('/post/torrent/admin', 'PostController@uploadTorrent');
     // Bangumi
-    $router->get('/bangumi/{post_id}/transfer-log/admin', 'Admin\BangumiController@transferLog');
-    $router->get('/bangumi/{post_id}/transfer-log-raw/admin', 'Admin\BangumiController@transferLogRaw');
+    $route->get('/bangumi/{post_id}/transfer-log/admin', 'BangumiController@transferLog');
+    $route->get('/bangumi/{post_id}/transfer-log-raw/admin', 'BangumiController@transferLogRaw');
     // Users Manage
-    $router->get('/users/admin', 'Admin\UserController@getList');
-    $router->get('/user/{id}/admin', 'Admin\UserController@show');
-    $router->post('/user/admin', 'Admin\UserController@add');
-    $router->post('/user/{id}/admin', 'Admin\UserController@update');
+    $route->get('/users/admin', 'UserController@getList');
+    $route->get('/user/{id}/admin', 'UserController@show');
+    $route->post('/user/admin', 'UserController@add');
+    $route->post('/user/{id}/admin', 'UserController@update');
     // Settings
-    $router->get('/bangumi-settings/admin', 'Admin\SettingController@bangumiSettings');
-    // $router->post('/bangumi-setting/admin', '');
-    $router->post('/bangumi-setting/{id}/admin', 'Admin\SettingController@updateBangumiSettings');
-    $router->post('/bangumi-setting/{id}/admin/status', 'Admin\SettingController@changeBangumiSettingStatus');
-    $router->delete('/bangumi-setting/{id}/admin', 'Admin\SettingController@deleteBangumiSettings');
+    $route->get('/bangumi-settings/admin', 'SettingController@bangumiSettings');
+    // $route->post('/bangumi-setting/admin', '');
+    $route->post('/bangumi-setting/{id}/admin', 'SettingController@updateBangumiSettings');
+    $route->post('/bangumi-setting/{id}/admin/status', 'SettingController@changeBangumiSettingStatus');
+    $route->delete('/bangumi-setting/{id}/admin', 'SettingController@deleteBangumiSettings');
 });
 // Posts Manage
 // Route::get('/posts/admin', 'Admin\PostController@getList');
