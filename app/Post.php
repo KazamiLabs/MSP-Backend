@@ -42,6 +42,17 @@ class Post extends Model
         // 'post_mime_type',
     ];
 
+    protected $hidden = [
+        'post_password',
+        'to_ping',
+        'pinged',
+        'ping_status',
+        'guid',
+        'menu_order',
+        'post_parent',
+        'deleted_at',
+    ];
+
     //
     public function author()
     {

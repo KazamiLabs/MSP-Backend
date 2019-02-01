@@ -20,24 +20,24 @@ class PostController extends Controller
     //
     public function show($id)
     {
-        $post = Post::findOrFail($id);
-        if ($post) {
-            unset($post->author->user_pass);
-            unset($post->post_password);
-            $post->bangumi;
-        }
+        $post = Post::with(['author:id,nicename', 'bangumi'])->findOrFail($id);
         return $post;
     }
 
     public function getList(Request $request)
     {
         $limit = $request->get('limit', 15);
-        $posts = Post::where('post_status', '!=', 'inherit')->orderBy('id', 'desc')->paginate($limit);
-        foreach ($posts as $post) {
-            $post->access_api = url("/api/post/{$post->post_name}/edit");
-            unset($post->author->user_pass);
-            unset($post->post_password);
-        }
+        $posts = Post::with(['author:id,nicename'])
+            ->select(
+                'id', 'post_author', 'post_title',
+                'post_excerpt', 'post_status', 'comment_status',
+                'post_name', 'post_date', 'post_date_gmt',
+                'post_modified', 'post_modified_gmt', 'post_content_filtered',
+                'post_type', 'post_mime_type', 'comment_count', 'created_at',
+                'updated_at')
+            ->where('post_status', '!=', 'inherit')
+            ->orderBy('id', 'desc')
+            ->paginate($limit);
         return $posts;
     }
 
