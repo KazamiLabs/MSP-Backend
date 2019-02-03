@@ -35,7 +35,7 @@ return [
     'channels' => [
         'stack'    => [
             'driver'   => 'stack',
-            'channels' => ['single', 'log2db'],
+            'channels' => ['single'],
         ],
 
         'single'   => [
@@ -75,11 +75,6 @@ return [
         'errorlog' => [
             'driver' => 'errorlog',
             'level'  => 'debug',
-        ],
-
-        'log2db'   => [
-            'driver' => 'custom',
-            'via'    => \App\Services\Logs\LogMonolog::class,
         ],
     ],
 
