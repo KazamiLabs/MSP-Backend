@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/portal', function () {
+    return view('portal');
+});
+
 Route::get('/user', 'UserController@hello');
 
 Route::get('/phpinfo', function () {

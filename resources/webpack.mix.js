@@ -11,5 +11,15 @@ let mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/assets/js/app.js', 'public/js')
-   .sass('resources/assets/sass/app.scss', 'public/css');
+mix.setPublicPath('../public/')
+   .js('assets/js/app.js', 'js')
+   .sass('assets/sass/app.scss', 'css')
+   .sass('assets/sass/material-kit.scss', 'css')
+   // .css('node_modules/material-kit/assets/css/material-kit.min.css', 'css')
+   // .scripts([
+   //    'node_modules/material-kit/assets/js/core/jquery.min.js',
+   //    'node_modules/material-kit/assets/js/core/popper.min.js',
+   // ], './../public/js/core.js')
+   // .js('node_modules/material-kit/assets/js/core/jquery.min.js', 'js')
+   // .js('node_modules/material-kit/assets/js/core/popper.min.js', 'js')
+   // .js('node_modules/material-kit/assets/js/material-kit.js', 'js')

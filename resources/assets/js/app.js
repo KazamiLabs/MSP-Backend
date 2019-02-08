@@ -1,4 +1,4 @@
-
+import VueMaterial from "vue-material";
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -9,6 +9,8 @@ require('./bootstrap');
 
 window.Vue = require('vue');
 
+Vue.use(VueMaterial)
+
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -16,6 +18,8 @@ window.Vue = require('vue');
  */
 
 Vue.component('example-component', require('./components/ExampleComponent.vue'));
+Vue.component('main-navbar', require('./layout/MainNavbar.vue'));
+Vue.component('main-footer', require('./layout/MainFooter.vue'));
 
 const app = new Vue({
     el: '#app'
