@@ -12,9 +12,12 @@ let mix = require('laravel-mix');
  */
 
 mix.setPublicPath('../public/')
-   .js('assets/js/app.js', 'js')
-   .sass('assets/sass/app.scss', 'css')
-   .sass('assets/sass/material-kit.scss', 'css')
+    .styles([
+        'node_modules/vue-material/dist/vue-material.min.css'
+    ], './../public/css/core.css')
+    .sass('assets/sass/material-kit.scss', 'css')
+    .js('assets/js/app.js', 'js')
+    .sass('assets/sass/app.scss', 'css')
    // .css('node_modules/material-kit/assets/css/material-kit.min.css', 'css')
    // .scripts([
    //    'node_modules/material-kit/assets/js/core/jquery.min.js',

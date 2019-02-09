@@ -17,9 +17,9 @@ Vue.use(VueMaterial)
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('example-component', require('./components/ExampleComponent.vue'));
 Vue.component('main-navbar', require('./layout/MainNavbar.vue'));
 Vue.component('main-footer', require('./layout/MainFooter.vue'));
+Vue.component('parallax', require('./components/Parallax.vue'))
 
 const app = new Vue({
     el: '#app'

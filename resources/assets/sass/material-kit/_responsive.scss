@@ -1,6 +1,6 @@
 @media (min-width: 992px){
     .md-toolbar-toggle{
-      display: none;
+      display: none !important;
     }
 
     .footer:not(.footer-big){

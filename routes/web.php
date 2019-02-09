@@ -17,9 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/portal', function () {
-    return view('portal');
-});
+Route::get('/portal', 'PortalController@index');
 
 Route::get('/user', 'UserController@hello');
 

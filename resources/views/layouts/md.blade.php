@@ -18,15 +18,30 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/material-kit.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/core.css') }}" rel="stylesheet">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 
-<body>
+<body class="index-page">
     <div id="app">
-        <main-navbar />
-        <main class="py-4">
-            
-        </main>
+        <template><main-navbar :color-on-scroll="400" /></template>
+        <div class="wrapper">
+            <parallax class="page-header header-filter header-background">
+                <div class="md-layout">
+                    <div class="md-layout-item">
+                        <div class="image-wrapper">
+                            <div class="brand">
+                                <h1>Mabors!</h1>
+                                <h3>The description for Mabors! portal site.</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </parallax>
+            <main class="py-4">
+                @yield('content')
+            </main>
+        </div>
     </div>
 </body>
 <!-- Javascript -->
