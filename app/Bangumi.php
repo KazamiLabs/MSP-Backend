@@ -14,4 +14,9 @@ class Bangumi extends Model
     {
         return $this->belongsTo(Post::class);
     }
+
+    public function getEncodeFilenameAttribute()
+    {
+        return urlencode($this->filename);
+    }
 }

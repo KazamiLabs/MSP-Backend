@@ -19,6 +19,11 @@ Route::get('/', function () {
 
 Route::get('/portal', 'PortalController@index');
 
+// Posts List
+Route::get('/posts', 'PostController@getList');
+Route::get('/post/{id}', 'PostController@show');
+Route::get('/post/{id}/torrent/download', 'PostController@torrentDownload');
+
 Route::get('/user', 'UserController@hello');
 
 Route::get('/phpinfo', function () {

@@ -66,7 +66,3 @@ Route::middleware('refresh.token')->namespace('Admin')->group(function ($route) 
 // Route::post('/post/{id}/admin', 'Admin\PostController@update');
 Route::post('/post/picture/admin', 'Admin\PostController@uploadPic');
 Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
-
-// Posts List
-Route::get('/posts', 'PostController@getList');
-Route::get('/post/{id}', 'PostController@show');
