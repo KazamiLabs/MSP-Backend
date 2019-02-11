@@ -18,8 +18,8 @@ class CreatePostsTable extends Migration
             $table->integer('post_author');
             $table->longText('post_content');
             $table->text('post_title');
-            // 文章摘要
-            $table->text('post_excerpt');
+            $table->string('cover')->comment('封面');
+            $table->text('post_excerpt')->comment('文章摘要');
             $table->string('post_status', 20)->default('draft');
             $table->string('comment_status', 20)->default('open');
             $table->string('ping_status', 20)->default('open');
@@ -27,13 +27,13 @@ class CreatePostsTable extends Migration
             $table->string('post_name', 200)->default('');
             $table->text('to_ping')->nullable(true);
             $table->text('pinged')->nullable(true);
-            // 此类字段是节省时间的额外运算开销用
+            /* 此类字段是节省时间的额外运算开销用 START */
             $table->dateTime('post_date')->default(DB::raw('NOW()'));
             $table->dateTime('post_date_gmt')->default(DB::raw('NOW()'));
             $table->dateTime('post_modified')->default(DB::raw('NOW()'));
             $table->dateTime('post_modified_gmt')->default(DB::raw('NOW()'));
-            // 帖子更新原因字段
-            $table->longText('post_content_filtered')->nullable(true);
+            /* 此类字段是节省时间的额外运算开销用 STOP */
+            $table->longText('post_content_filtered')->nullable(true)->comment('帖子更新原因');
             $table->bigInteger('post_parent')->default(0);
             $table->string('guid', 255)->default('');
             $table->integer('menu_order')->default(100);
