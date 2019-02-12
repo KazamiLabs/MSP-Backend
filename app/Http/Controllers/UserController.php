@@ -22,14 +22,13 @@ class UserController extends Controller
 
     public function search(Request $request)
     {
-        $userM = new User();
         $limit = $request->get('limit', 5);
 
         if ($request->has('name')) {
             $search_user = $request->get('name');
-            return $userM->searchSelect()->searchCondition($search_user)->paginate($limit);
+            return User::searchSelect()->searchCondition($search_user)->paginate($limit);
         } else {
-            return $userM->searchSelect()->paginate($limit);
+            return User::searchSelect()->paginate($limit);
         }
 
     }

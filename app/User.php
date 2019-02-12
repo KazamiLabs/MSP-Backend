@@ -26,8 +26,10 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'avatar', 'password', 'remember_token',
     ];
+
+    protected $appends = ['avatar_addr'];
 
     public function posts()
     {
@@ -36,14 +38,15 @@ class User extends Authenticatable implements JWTSubject
 
     public function scopeSearchSelect($query)
     {
-        return $query->select('id', 'user_nicename');
+        return $query->select('id', 'nicename', 'avatar');
     }
 
     public function scopeSearchCondition($query, $search_user)
     {
-        return $query->where('user_login', 'like', "%{$search_user}%")
-            ->whereOr('user_nicename', 'like', "%{$search_user}%")
-            ->whereOr('user_email', 'like', "%{$search_user}%");
+        return $query->where('name', 'like', "%{$search_user}%")
+            ->whereOr('email', 'like', "%{$search_user}%")
+            ->whereOr('nicename', 'like', "%{$search_user}%")
+            ->whereOr('email', 'like', "%{$search_user}%");
     }
 
     /**
@@ -64,6 +67,17 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function getAvatarAddrAttribute()
+    {
+        $url = '';
+        if (filter_var($this->avatar, FILTER_VALIDATE_URL) === false) {
+            $url = route('user.avatar', ['id' => $this->id]);
+        } else {
+            $url = $this->avatar;
+        }
+        return $url;
     }
 
 }
