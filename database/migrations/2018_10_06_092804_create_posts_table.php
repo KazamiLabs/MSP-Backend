@@ -18,7 +18,7 @@ class CreatePostsTable extends Migration
             $table->integer('post_author');
             $table->longText('post_content');
             $table->text('post_title');
-            $table->string('cover')->comment('封面');
+            $table->string('cover')->nullable()->comment('封面');
             $table->text('post_excerpt')->comment('文章摘要');
             $table->string('post_status', 20)->default('draft');
             $table->string('comment_status', 20)->default('open');

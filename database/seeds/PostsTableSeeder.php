@@ -2,6 +2,7 @@
 
 use App\Bangumi;
 use App\Post;
+use App\User;
 use Illuminate\Database\Seeder;
 
 class PostsTableSeeder extends Seeder
@@ -19,7 +20,10 @@ class PostsTableSeeder extends Seeder
         //     $posts->create();
         // }
         $posts = factory(Post::class, 10);
-        $posts->create()->each(function ($post) {
+        $posts->make()->each(function ($post) {
+            $author = User::inRandomOrder()->first();
+            $post->author()->associate($author);
+            $post->save();
             $post->bangumi()->save(factory(Bangumi::class)->make());
         });
     }

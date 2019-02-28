@@ -21,7 +21,6 @@ $factory->define(App\Post::class, function (Faker $faker) {
     $time = time();
     return [
         //
-        'post_author'           => '1',
         'post_content'          => $contents,
         'post_title'            => $title,
         'post_excerpt'          => substr($contents, 0, 20),
