@@ -28,12 +28,12 @@ Route::group([
     'prefix' => 'auth',
 ], function ($route) {
     $route->post('login', 'Admin\AuthController@login');
-    $route->post('logout', 'Admin\AuthController@logout');
-    $route->get('refresh', 'Admin\AuthController@refresh');
-    $route->get('me', 'Admin\AuthController@me');
+    $route->middleware('auth:api')->post('logout', 'Admin\AuthController@logout');
+    $route->middleware('auth:api')->get('refresh', 'Admin\AuthController@refresh');
+    $route->middleware('auth:api')->get('me', 'Admin\AuthController@me');
 });
 
-Route::middleware('refresh.token')->namespace('Admin')->group(function ($route) {
+Route::middleware('auth:api')->namespace('Admin')->group(function ($route) {
     // Posts Manage
     $route->get('/posts/admin', 'PostController@getList');
     $route->get('/post/queues/admin', 'PostController@queues');

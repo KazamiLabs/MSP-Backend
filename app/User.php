@@ -3,13 +3,15 @@
 namespace App;
 
 use App\Post;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable
 {
     use Notifiable;
+
+    const TOKEN_REDIS_DB_INDEX = 1;
 
     /**
      * The attributes that are mass assignable.
@@ -49,26 +51,6 @@ class User extends Authenticatable implements JWTSubject
             ->whereOr('email', 'like', "%{$search_user}%");
     }
 
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT.
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
     public function getAvatarAddrAttribute()
     {
         $url = '';
@@ -78,6 +60,85 @@ class User extends Authenticatable implements JWTSubject
             $url = $this->avatar;
         }
         return $url;
+    }
+
+    /**
+     * Token 登记
+     *
+     * @param integer $ttl $token 有效期（分钟）
+     * @param string $token 可选，不传会生成 token
+     * @return string 返回 token （无论有没有定义 $token 参数）
+     * @author Tsukasa Kanzaki <tsukasa.kzk@gmail.com>
+     * @datetime 2019-05-11
+     */
+    public function setToken(int $ttl, string $token = null): string
+    {
+        // token 存储库选定
+        Redis::select(self::TOKEN_REDIS_DB_INDEX);
+        /**
+         * token 为空
+         * 则优先从 Redis 中查找，没有再生成
+         */
+        if (is_null($token)) {
+            $token = Redis::get("user:id:{$this->id}");
+            if (is_null($token)) {
+                $token = md5($this->toJson() . time() . rand(10, 99));
+            }
+        }
+
+        if ($ttl > 0) {
+            Redis::set(
+                "user:token:{$token}",
+                $this->id,
+                'EX',
+                60 * $ttl
+            );
+            Redis::set(
+                "user:id:{$this->id}",
+                $token,
+                'EX',
+                60 * $ttl
+            );
+        } else {
+            Redis::set("user:token:{$token}", $this->id);
+            Redis::set("user:id:{$this->id}", $token);
+        }
+        return $token;
+    }
+
+    /**
+     * Token 注销
+     *
+     * @return void
+     * @author Tsukasa Kanzaki <tsukasa.kzk@gmail.com>
+     * @datetime 2019-05-11
+     */
+    public function destroyToken()
+    {
+        // token 存储库选定
+        Redis::select(self::TOKEN_REDIS_DB_INDEX);
+        // 移除相应的键
+        $token = Redis::get("user:id:{$this->id}");
+        if ($token) {
+            Redis::del("user:token:{$token}");
+        }
+        Redis::del("user:id:{$this->id}");
+    }
+
+    /**
+     * 获取用户信息 (by token)
+     * @param string $token
+     * @return User|null
+     */
+    public static function findWithToken(string $token)
+    {
+        // token 存储库选定
+        Redis::select(self::TOKEN_REDIS_DB_INDEX);
+        $userId = Redis::get("user:token:{$token}");
+        if (is_null($userId)) {
+            return null;
+        }
+        return self::find($userId);
     }
 
 }
