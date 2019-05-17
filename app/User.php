@@ -2,10 +2,12 @@
 
 namespace App;
 
+use App\Events\UserCreating;
 use App\Post;
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redis;
 
 class User extends Authenticatable
 {
@@ -19,7 +21,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'nicename', 'email', 'password', 'status',
     ];
 
     /**
@@ -29,6 +31,15 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'avatar', 'password', 'remember_token',
+    ];
+
+    /**
+     * 此模型的事件映射.
+     *
+     * @var array
+     */
+    protected $dispatchesEvents = [
+        'creating' => UserCreating::class,
     ];
 
     protected $appends = ['avatar_addr'];
@@ -60,6 +71,14 @@ class User extends Authenticatable
             $url = $this->avatar;
         }
         return $url;
+    }
+
+    public function setPasswordAttribute(string $password)
+    {
+        if (is_null($password) || $password === '') {
+            return;
+        }
+        $this->attributes['password'] = Hash::make($password);
     }
 
     /**

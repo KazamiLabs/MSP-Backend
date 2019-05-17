@@ -26,9 +26,37 @@ class UserController extends Controller
     public function getList(Request $request)
     {
         $limit = $request->get('limit', 15);
-        $users = User::select('id', 'name', 'email', 'nicename', 'avatar', 'timezone', 'registered', 'is_admin', 'status')
+        $users = User::select(
+            'id',
+            'name',
+            'email',
+            'nicename',
+            'avatar',
+            'timezone',
+            'registered_at',
+            'is_admin',
+            'status'
+        )
             ->orderBy('id', 'desc')
             ->paginate($limit);
         return $users;
+    }
+
+    public function update(Request $request)
+    {
+        $id   = $request->post('id');
+        $user = User::findOrFail($id);
+        $data = $request->only(['nicename', 'email', 'name', 'password', 'status']);
+        $user->fill($data);
+        $user->save();
+        return response([], 200);
+    }
+
+    public function add(Request $request)
+    {
+        $data = $request->only(['nicename', 'email', 'name', 'password', 'status']);
+        $user = new User($data);
+        $user->save();
+        return response([], 200);
     }
 }

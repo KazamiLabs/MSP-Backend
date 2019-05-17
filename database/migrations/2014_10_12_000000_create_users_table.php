@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateUsersTable extends Migration
@@ -26,7 +25,7 @@ class CreateUsersTable extends Migration
             $table->string('avatar')->nullable();
             $table->string('person_index', 100)->default('');
             $table->string('timezone')->default($defaultTz);
-            $table->dateTime('registered')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->dateTime('registered_at');
             $table->string('activation_key', 255)->default('');
             $table->tinyInteger('is_admin')->default(0);
             $table->integer('status')->default(1);
