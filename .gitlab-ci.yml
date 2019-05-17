@@ -15,4 +15,4 @@ deploy:
   script:
     - composer global require "laravel/envoy=~1.0"
     - wget ${ENVOY_URL} -O Envoy.blade.php
-    - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${APP_DIR} --app_user=${APP_USER}
+    - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${APP_DIR} --app_user=${APP_USER} --branch=${CI_COMMIT_REF_NAME}
