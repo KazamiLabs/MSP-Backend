@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use Illuminate\Container\Container;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+
+    const TOKEN_TTL = 60;
 
     /**
      * Get a JWT via given credentials.
@@ -27,7 +29,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $token = $request->user()->setToken(60);
+        $token = $request->user()->setToken(self::TOKEN_TTL);
 
         return $this->respondWithToken($token);
     }
@@ -39,7 +41,7 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return $request->user();
     }
 
     /**
@@ -49,7 +51,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth('api')->logout();
+        Auth::logout();
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -60,9 +62,11 @@ class AuthController extends Controller
      * 值得注意的是用上面的getToken再获取一次Token并不算做刷新，两次获得的Token是并行的，即两个都可用。
      * @return \Illuminate\Http\JsonResponse
      */
-    public function refresh()
+    public function refresh(Request $request)
     {
-        return $this->respondWithToken(auth('api')->refresh());
+        $request->user()->destroyToken();
+        $token = $request->user()->setToken(self::TOKEN_TTL);
+        return $this->respondWithToken($token);
     }
 
     /**
@@ -79,6 +83,6 @@ class AuthController extends Controller
 
     protected function guard()
     {
-        return Auth::guard('guard-name');
+        return Auth::guard('api');
     }
 }
