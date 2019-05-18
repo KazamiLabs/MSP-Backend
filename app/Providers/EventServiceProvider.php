@@ -6,6 +6,7 @@ use App\Events\UserCreating;
 use App\Listeners\SetUserRegisteredDateTime;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Redis;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -33,5 +34,6 @@ class EventServiceProvider extends ServiceProvider
         parent::boot();
 
         //
+        Redis::enableEvents();
     }
 }
