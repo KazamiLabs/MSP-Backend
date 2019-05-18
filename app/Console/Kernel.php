@@ -29,9 +29,11 @@ class Kernel extends ConsoleKernel
         //          ->hourly();
         // $schedule->command('command:crontab')->everyMinute()->runInBackground();
         // 5min 限制重置
-        $schedule->call(function () {
-            DB::update('update user_records set count = 0;');
-        })->everyFiveMinutes()->runInBackground();
+        // $schedule->call(function () {
+        //     DB::update('update user_records set count = 0;');
+        // })->everyFiveMinutes()->runInBackground();
+        // telescope 定期清理日志
+        $schedule->command('telescope:prune --hours=1')->hourly();
     }
 
     /**
