@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Events\PostCreating;
+use App\Events\PostUpdating;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +53,16 @@ class Post extends Model
         'menu_order',
         'post_parent',
         'deleted_at',
+    ];
+
+    /**
+     * 此模型的事件映射.
+     *
+     * @var array
+     */
+    protected $dispatchesEvents = [
+        'creating' => PostCreating::class,
+        'updating' => PostUpdating::class,
     ];
 
     //

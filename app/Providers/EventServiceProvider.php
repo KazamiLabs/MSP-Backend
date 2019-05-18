@@ -2,7 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\PostCreating;
+use App\Events\PostUpdating;
 use App\Events\UserCreating;
+use App\Listeners\SetPostDateTimeForCreating;
+use App\Listeners\SetPostDateTimeForUpdating;
 use App\Listeners\SetUserRegisteredDateTime;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
@@ -21,6 +25,12 @@ class EventServiceProvider extends ServiceProvider
         // ],
         UserCreating::class => [
             SetUserRegisteredDateTime::class,
+        ],
+        PostCreating::class => [
+            SetPostDateTimeForCreating::class,
+        ],
+        PostUpdating::class => [
+            SetPostDateTimeForUpdating::class,
         ],
     ];
 
