@@ -18,13 +18,24 @@ class SettingController extends Controller
         return $settings;
     }
 
+    public function createBangumiSettings(Request $request)
+    {
+        $request->validate([
+            'sitedriver' => 'required',
+            'username'   => 'required',
+            'password'   => 'required',
+            'status'     => 'required',
+        ]);
+
+        $setting = new BangumiSetting($request->all());
+        $setting->save();
+
+        return response([], 201);
+    }
+
     public function updateBangumiSettings(Request $request, $id)
     {
         $setting = BangumiSetting::findOrFail($id);
-        if (is_null($setting)) {
-            Log::info('找不到同步账户', ['id' => $id, 'action' => 'updateBangumiSettings']);
-            abort(404, 'Settings not found');
-        }
         $request->validate([
             'sitedriver' => 'required',
             'username'   => 'required',
@@ -48,11 +59,7 @@ class SettingController extends Controller
 
     public function deleteBangumiSettings(Request $request, $id)
     {
-        $setting = BangumiSetting::find($id);
-        if (is_null($setting)) {
-            Log::info('找不到同步账户', ['id' => $id, 'action' => 'updateBangumiSettings']);
-            abort(404, 'Settings not found');
-        }
+        $setting = BangumiSetting::findOrFail($id);
         $setting->delete();
         return response([], 204);
     }

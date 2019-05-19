@@ -54,7 +54,7 @@ Route::middleware('auth:api')->namespace('Admin')->group(function ($route) {
     $route->post('/user/{id}/admin', 'UserController@update');
     // Settings
     $route->get('/bangumi-settings/admin', 'SettingController@bangumiSettings');
-    // $route->post('/bangumi-setting/admin', '');
+    $route->post('/bangumi-setting/admin', 'SettingController@createBangumiSettings');
     $route->post('/bangumi-setting/{id}/admin', 'SettingController@updateBangumiSettings');
     $route->post('/bangumi-setting/{id}/admin/status', 'SettingController@changeBangumiSettingStatus');
     $route->delete('/bangumi-setting/{id}/admin', 'SettingController@deleteBangumiSettings');
