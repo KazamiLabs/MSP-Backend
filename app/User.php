@@ -6,6 +6,7 @@ use App\Events\UserCreating;
 use App\Post;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 
@@ -122,6 +123,8 @@ class User extends Authenticatable
             Redis::set("user:token:{$token}", $this->id);
             Redis::set("user:id:{$this->id}", $token);
         }
+        // 使用完毕后重置到默认索引
+        Redis::select(Config::get('database.redis.default.database'));
         return $token;
     }
 
@@ -142,6 +145,8 @@ class User extends Authenticatable
             Redis::del("user:token:{$token}");
         }
         Redis::del("user:id:{$this->id}");
+        // 使用完毕后重置到默认索引
+        Redis::select(Config::get('database.redis.default.database'));
     }
 
     /**
@@ -157,6 +162,8 @@ class User extends Authenticatable
         if (is_null($userId)) {
             return null;
         }
+        // 使用完毕后重置到默认索引
+        Redis::select(Config::get('database.redis.default.database'));
         return self::find($userId);
     }
 
