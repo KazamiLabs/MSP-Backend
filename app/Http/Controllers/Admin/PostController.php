@@ -2,21 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Post;
 use App\Bangumi;
 use App\BangumiSetting;
-use App\Http\Controllers\Controller;
-use App\Jobs\ProcessPublishList;
-use App\Post;
-use App\Traits\NullToString;
-use App\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
+use App\Jobs\ProcessPublishList;
+use Illuminate\Support\Collection;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    const SHOW_QUEUE_KEY = 'posts_sync:queues';
     //
     public function show($id)
     {
@@ -50,16 +48,11 @@ class PostController extends Controller
         $bangumi = new Bangumi($request->bangumi);
         $post->bangumi()->save($bangumi);
         // 队列分发
-        $settings = BangumiSetting::where('status', 1)->get();
-        foreach ($settings as $setting) {
-            ProcessPublishList::dispatch($post, $setting);
-            // 使用 Redis 存储发布队列
-            Redis::rpush(self::SHOW_QUEUE_KEY, json_encode([
-                'post_title' => $post->post_title,
-                'sitename'   => $setting->sitename,
-                'status'     => 'pending',
-            ]));
-        }
+        BangumiSetting::where('status', 1)
+            ->get()
+            ->each(function ($setting) use ($post) {
+                ProcessPublishList::dispatch($post, $setting);
+            });
         return response(null, 201);
     }
 
@@ -129,11 +122,16 @@ class PostController extends Controller
 
     public function queues(Request $request)
     {
-        $queues = Redis::lrange(self::SHOW_QUEUE_KEY, 0, 15);
-        $queues = array_map(function ($queue) {
-            return json_decode($queue);
-        }, $queues);
-        return response($queues, count($queues) > 0 ? 200 : 204);
+        $keys = new Collection(Redis::keys(Post::getQueueListKey()));
+        $list = new Collection();
+        $keys->each(function ($key) use ($list) {
+            $value = Redis::get($key);
+            $value = json_decode($value, true);
+            if ($value) {
+                $list->push($value);
+            }
+        });
+        return response($list, $list->isNotEmpty() ? 200 : 204);
     }
 
     /**

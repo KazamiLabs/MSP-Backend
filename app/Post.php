@@ -2,18 +2,22 @@
 
 namespace App;
 
-use App\Events\PostCreating;
-use App\Events\PostUpdating;
 use App\User;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\BangumiSetting;
+use App\Events\PostCreating;
+use App\Events\PostUpdating;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
     use SoftDeletes;
+
+    const SHOW_QUEUE_KEY = 'posts_sync:queues';
+
     protected $dates = [
         'created_at',
         'updated_at',
@@ -123,5 +127,15 @@ class Post extends Model
             ->timezone($timezone)
             ->toDateTimeString()
         ;
+    }
+
+    public function getQueueKey(BangumiSetting $setting): string
+    {
+        return self::SHOW_QUEUE_KEY . ":setting:{$setting->id}:post:{$this->id}";
+    }
+
+    public static function getQueueListKey(): string
+    {
+        return self::SHOW_QUEUE_KEY . ":*";
     }
 }
