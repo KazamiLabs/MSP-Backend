@@ -59,10 +59,6 @@ Route::middleware('auth:api')->namespace('Admin')->group(function ($route) {
     $route->post('/bangumi-setting/{id}/admin/status', 'SettingController@changeBangumiSettingStatus');
     $route->delete('/bangumi-setting/{id}/admin', 'SettingController@deleteBangumiSettings');
 });
-// Posts Manage
-// Route::get('/posts/admin', 'Admin\PostController@getList');
-// Route::get('/post/{id}/admin', 'Admin\PostController@show');
-// Route::post('/post/admin', 'Admin\PostController@add');
-// Route::post('/post/{id}/admin', 'Admin\PostController@update');
+
 Route::post('/post/picture/admin', 'Admin\PostController@uploadPic');
 Route::post('/post/torrent/admin', 'Admin\PostController@uploadTorrent');
