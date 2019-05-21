@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Jobs\ProcessPublishList;
 use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
@@ -53,6 +54,9 @@ class PostController extends Controller
             ->each(function ($setting) use ($post) {
                 ProcessPublishList::dispatch($post, $setting);
             });
+        // 删除缓存中的种子文件记录
+        Cache::store('redis')
+            ->forget('TORRENT_CONFIRM:' . $bangumi->filepath);
         return response(null, 201);
     }
 
@@ -69,35 +73,45 @@ class PostController extends Controller
         $bangumi = $post->bangumi->fill($request->bangumi);
         $bangumi->save();
         $post->save();
+        // 删除缓存中的种子文件记录
+        Cache::store('redis')
+            ->forget('TORRENT_CONFIRM:' . $bangumi->filepath);
         return response(null, 200);
     }
 
     public function uploadPic(Request $request)
     {
         $path = $request->file('file')->store('public/posts');
-        return response([
-            'msg'    => 'hello uploadPic',
+        return [
+            'msg'    => 'Picture has been uploaded.',
             'path'   => $path,
             'assert' => Config::get('app.url') . Storage::url($path),
-        ], 200);
+        ];
     }
 
     public function uploadTorrent(Request $request)
     {
-        $file      = $request->file('file');
-        $s_name    = \torrent_hash($file->getRealPath());
-        $oriName   = $file->getClientOriginalName();
-        $ext       = pathinfo($oriName, PATHINFO_EXTENSION);
+        $file    = $request->file('file');
+        $oriName = $file->getClientOriginalName();
+        // 保存文件名构建
+        $s_name     = \torrent_hash($file->getRealPath());
+        $ext        = pathinfo($oriName, PATHINFO_EXTENSION);
+        $s_fullname = "{$s_name}.{$ext}";
+        // 标题信息，字幕组信息提取
         $title     = self::pregTitle($oriName);
         $groupName = self::pregGroupName($oriName);
-        $path      = $file->storeAs('private/torrent', "{$s_name}.{$ext}");
-        return response([
-            'msg'        => 'hello upload torrent',
+        // 保存
+        $path = $file->storeAs(Bangumi::TORRENT_PATH, $s_fullname);
+        // 设置保存的文件名 30 分钟后过期，以触发过期删除事件
+        Cache::store('redis')
+            ->put('TORRENT_CONFIRM:' . $s_fullname, $path, 1800);
+        return [
+            'msg'        => 'Torrent has been uploaded',
             'filepath'   => $path,
-            'filename'   => $file->getClientOriginalName(),
+            'filename'   => $oriName,
             'title'      => $title,
             'group_name' => $groupName,
-        ]);
+        ];
     }
 
     public function changeStatus(Request $request, int $id)
