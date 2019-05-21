@@ -10,21 +10,22 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
-class TorrentExpireListen extends Command
+class FileExpireListen extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'torrent:expire';
+    protected $signature = 'file:expire';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Listen for file uploads.
+    If it is not stored in the database, delete the file after the cache record expires.';
 
     /**
      * Create a new command instance.
