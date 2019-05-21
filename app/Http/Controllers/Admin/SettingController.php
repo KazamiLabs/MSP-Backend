@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\SysSetting;
 use App\BangumiSetting;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
+use App\Http\Controllers\Controller;
 
 class SettingController extends Controller
 {
@@ -62,5 +63,34 @@ class SettingController extends Controller
         $setting = BangumiSetting::findOrFail($id);
         $setting->delete();
         return response([], 204);
+    }
+
+    public function sysSettingList(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $list    = SysSetting::searchCondition($keyword)
+            ->paginate(10);
+        return $list;
+    }
+
+    public function sysSettings(Request $request)
+    {
+        return SysSetting::getValues();
+    }
+
+    public function setSysSetting(Request $request)
+    {
+        $settings = new Collection($request->all());
+
+        if ($settings->isNotEmpty()) {
+            $settings->each(function ($value, $key) {
+                if (is_null($value)) {
+                    $value = '';
+                }
+                SysSetting::setValue($key, $value);
+            });
+        }
+
+        return response(null, 200);
     }
 }
