@@ -14,8 +14,6 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    const TOKEN_REDIS_DB_INDEX = 1;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -93,8 +91,6 @@ class User extends Authenticatable
      */
     public function setToken(int $ttl, string $token = null): string
     {
-        // token 存储库选定
-        Redis::select(self::TOKEN_REDIS_DB_INDEX);
         /**
          * token 为空
          * 则优先从 Redis 中查找，没有再生成
@@ -123,8 +119,6 @@ class User extends Authenticatable
             Redis::set("user:token:{$token}", $this->id);
             Redis::set("user:id:{$this->id}", $token);
         }
-        // 使用完毕后重置到默认索引
-        Redis::select(Config::get('database.redis.default.database'));
         return $token;
     }
 
@@ -137,16 +131,12 @@ class User extends Authenticatable
      */
     public function destroyToken()
     {
-        // token 存储库选定
-        Redis::select(self::TOKEN_REDIS_DB_INDEX);
         // 移除相应的键
         $token = Redis::get("user:id:{$this->id}");
         if ($token) {
             Redis::del("user:token:{$token}");
         }
         Redis::del("user:id:{$this->id}");
-        // 使用完毕后重置到默认索引
-        Redis::select(Config::get('database.redis.default.database'));
     }
 
     /**
@@ -156,14 +146,10 @@ class User extends Authenticatable
      */
     public static function findWithToken(string $token)
     {
-        // token 存储库选定
-        Redis::select(self::TOKEN_REDIS_DB_INDEX);
         $userId = Redis::get("user:token:{$token}");
         if (is_null($userId)) {
             return null;
         }
-        // 使用完毕后重置到默认索引
-        Redis::select(Config::get('database.redis.default.database'));
         return self::find($userId);
     }
 
