@@ -2,15 +2,15 @@
 
 namespace App;
 
-use App\User;
-use Carbon\Carbon;
 use App\BangumiSetting;
 use App\Events\PostCreating;
 use App\Events\PostUpdating;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Config;
+use App\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class Post extends Model
 {
@@ -27,6 +27,7 @@ class Post extends Model
     ];
     protected $fillable = [
         'post_content',
+        'markdown_code',
         'post_title',
         'post_excerpt',
         'post_status',
@@ -42,10 +43,10 @@ class Post extends Model
         'post_modified_gmt',
         'post_content_filtered',
         'post_parent',
-        // 'guid',
+        'guid',
         'menu_order',
         'post_type',
-        // 'post_mime_type',
+        'post_mime_type',
     ];
 
     protected $hidden = [
@@ -53,7 +54,7 @@ class Post extends Model
         'to_ping',
         'pinged',
         'ping_status',
-        'guid',
+        // 'guid',
         'menu_order',
         'post_parent',
         'deleted_at',

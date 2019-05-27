@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Post;
 use App\Bangumi;
 use App\BangumiSetting;
-use Illuminate\Http\Request;
-use App\Jobs\ProcessPublishList;
-use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPublishList;
+use App\Post;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -34,7 +34,7 @@ class PostController extends Controller
                 'post_modified', 'post_modified_gmt', 'post_content_filtered',
                 'post_type', 'post_mime_type', 'comment_count', 'created_at',
                 'updated_at')
-            ->where('post_status', '!=', 'inherit')
+            ->whereNotIn('post_status', ['inherit', 'auto-draft'])
             ->orderBy('id', 'desc')
             ->paginate($limit);
         return $posts;

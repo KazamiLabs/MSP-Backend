@@ -5,7 +5,10 @@ namespace App\Console\Commands\Conversion;
 use App\Bangumi;
 use App\Post;
 use App\User;
+use Converter\BBCodeConverter;
+use Converter\HTMLConverter;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class Posts extends Command
@@ -34,9 +37,9 @@ class Posts extends Command
         parent::__construct();
 
         // 载入新数据库链接
-        config([
+        Config::set([
             'database.connections' => array_merge(
-                config('database.connections'),
+                Config::get('database.connections'),
                 [
                     'wpmysql' => [
                         'driver'      => 'mysql',
@@ -101,6 +104,12 @@ class Posts extends Command
                     } else {
                         $cover = '';
                     }
+
+                    // Markdown 转换
+                    $html_coverter           = new HTMLConverter($postData->post_content);
+                    $bbcode_coverter         = new BBCodeConverter($html_coverter->toBBCode());
+                    $postData->markdown_code = $bbcode_coverter->toMarkdown();
+
                     $post   = new Post();
                     $author = User::find($postData->post_author);
                     $post->fill((array) $postData);
