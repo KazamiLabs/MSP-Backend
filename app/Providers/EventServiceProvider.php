@@ -5,12 +5,14 @@ namespace App\Providers;
 use App\Events\PostCreating;
 use App\Events\PostUpdating;
 use App\Events\UserCreating;
-use App\Listeners\SetPostDateTimeForCreating;
-use App\Listeners\SetPostDateTimeForUpdating;
-use App\Listeners\SetUserRegisteredDateTime;
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Redis;
+use App\Listeners\CheckAndSetPostGuid;
+use App\Listeners\CheckAndSetPostExcerpt;
+use App\Listeners\SetUserRegisteredDateTime;
+use App\Listeners\SetPostDateTimeForCreating;
+use App\Listeners\SetPostDateTimeForUpdating;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -28,9 +30,13 @@ class EventServiceProvider extends ServiceProvider
         ],
         PostCreating::class => [
             SetPostDateTimeForCreating::class,
+            CheckAndSetPostExcerpt::class,
+            CheckAndSetPostGuid::class,
         ],
         PostUpdating::class => [
             SetPostDateTimeForUpdating::class,
+            CheckAndSetPostExcerpt::class,
+            CheckAndSetPostGuid::class,
         ],
     ];
 
