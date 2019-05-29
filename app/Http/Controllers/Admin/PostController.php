@@ -42,7 +42,7 @@ class PostController extends Controller
 
     public function add(Request $request)
     {
-        $post   = new Post($request->toArray());
+        $post   = new Post($request->all());
         $author = auth('api')->user();
         $post->author()->associate($author);
         $post->save();
