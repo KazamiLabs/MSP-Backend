@@ -1,18 +1,30 @@
 variables:
   ENVOY_URL: http://foo.bar/Envoy.blade.php
-  APP_DIR: app
+  SIT_APP_DIR: app
+  PROD_APP_DIR: app
   APP_USER: app_user:app_group
 stages:
-  - deploy
+  - deploy_sit
+  - deploy_prod
 cache:
   key: ${CI_BUILD_REF_NAME}
-  paths:
-    - path/cache
-deploy:
-  stage: deploy
+deploy_sit:
+  stage: deploy_sit
   tags:
     - deploy
+  only:
+    - develop
   script:
     - composer global require "laravel/envoy=~1.0"
     - wget ${ENVOY_URL} -O Envoy.blade.php
-    - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${APP_DIR} --app_user=${APP_USER} --branch=${CI_COMMIT_REF_NAME}
+    - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${SIT_APP_DIR} --app_user=${APP_USER} --branch=${CI_COMMIT_REF_NAME}
+deploy_prod:
+  stage: deploy_prod
+  tags:
+    - deploy
+  only:
+    - master
+  script:
+    - composer global require "laravel/envoy=~1.0"
+    - wget ${ENVOY_URL} -O Envoy.blade.php
+    - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${PROD_APP_DIR} --app_user=${APP_USER} --branch=${CI_COMMIT_REF_NAME}
