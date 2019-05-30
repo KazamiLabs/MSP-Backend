@@ -56,7 +56,7 @@ class PostController extends Controller
             });
         // 删除缓存中的种子文件记录
         Cache::store('redis')
-            ->forget('TORRENT_CONFIRM:' . $bangumi->filepath);
+            ->forget('TORRENT_CONFIRM:' . pathinfo($bangumi->filepath, PATHINFO_BASENAME));
         return response(null, 201);
     }
 
@@ -75,7 +75,7 @@ class PostController extends Controller
         $post->save();
         // 删除缓存中的种子文件记录
         Cache::store('redis')
-            ->forget('TORRENT_CONFIRM:' . $bangumi->filepath);
+            ->forget('TORRENT_CONFIRM:' . pathinfo($bangumi->filepath, PATHINFO_BASENAME));
         return response(null, 200);
     }
 
