@@ -2,6 +2,8 @@
 
 namespace App\Tools\Ocr;
 
+use Exception;
+
 class Ruokuai
 {
     const RUOKUAI_API               = 'http://api.ruokuai.com/create.json';
@@ -42,14 +44,20 @@ class Ruokuai
         curl_close($ch);
 
         if ($result === false) {
-            throw new \Exception('Request failed');
+            throw new Exception('Request failed');
         }
 
         $data = json_decode($result);
         if ($data === false) {
-            throw new \Exception('NON-JSON data response');
+            throw new Exception('NON-JSON data response');
         }
 
-        return $data->Result;
+        $result = '';
+        try {
+            $result = $data->Result;
+        } catch (Exception $e) {
+            throw new Exception($data->Error, $data->Error_Code);
+        }
+        return $result;
     }
 }
