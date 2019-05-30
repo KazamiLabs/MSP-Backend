@@ -136,16 +136,21 @@ class PostController extends Controller
 
     public function queues(Request $request)
     {
-        $keys = new Collection(Redis::keys(Post::getQueueListKey()));
-        $list = new Collection();
-        $keys->each(function ($key) use ($list) {
+        $keys    = new Collection(Redis::keys(Post::getQueueListKey()));
+        $list    = new Collection();
+        $hasDone = true;
+        $keys->each(function ($key) use ($list, &$hasDone) {
             $value = Redis::get($key);
             $value = json_decode($value, true);
             if ($value) {
                 $list->push($value);
+                $hasDone = $hasDone && (!in_array($value['status'], ['pending', 'processing']));
             }
         });
-        return response($list, $list->isNotEmpty() ? 200 : 204);
+        return response([
+            'has_done' => $hasDone,
+            'list'     => $list,
+        ]);
     }
 
     /**
