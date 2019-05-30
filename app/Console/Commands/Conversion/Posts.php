@@ -110,6 +110,11 @@ class Posts extends Command
                     $bbcode_coverter         = new BBCodeConverter($html_coverter->toBBCode());
                     $postData->markdown_code = $bbcode_coverter->toMarkdown();
 
+                    // 已完成状态转换
+                    if ($postData->post_status === 'publish') {
+                        $postData->post_status = 'published';
+                    }
+
                     $post   = new Post();
                     $author = User::find($postData->post_author);
                     $post->fill((array) $postData);
