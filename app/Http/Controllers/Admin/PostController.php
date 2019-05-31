@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Post;
 use App\Bangumi;
 use App\BangumiSetting;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use App\Jobs\ProcessPublishList;
-use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessPublishList;
+use App\Post;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -138,7 +138,9 @@ class PostController extends Controller
     public function queues(Request $request)
     {
         $keys = new Collection(
-            Redis::keys(Cache::store('redis')->getPrefix() . Post::getQueueListKey())
+            Cache::store('redis')
+                ->connection()
+                ->keys(Cache::store('redis')->getPrefix() . Post::getQueueListKey())
         );
         $keys = $keys->map(function ($key) {
             return Str::replaceFirst(Cache::store('redis')->getPrefix(), '', $key);
