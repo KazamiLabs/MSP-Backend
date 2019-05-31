@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Post;
 use App\Bangumi;
 use App\BangumiSetting;
-use App\Http\Controllers\Controller;
-use App\Jobs\ProcessPublishList;
-use App\Post;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Jobs\ProcessPublishList;
 use Illuminate\Support\Collection;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -136,20 +137,25 @@ class PostController extends Controller
 
     public function queues(Request $request)
     {
-        $keys    = new Collection(Redis::keys(Post::getQueueListKey()));
-        $list    = new Collection();
+        $keys = new Collection(
+            Redis::keys(Cache::store('redis')->getPrefix() . Post::getQueueListKey())
+        );
+        $keys = $keys->map(function ($key) {
+            return Str::replaceFirst(Cache::store('redis')->getPrefix(), '', $key);
+        });
+
+        if ($keys->isNotEmpty()) {
+            $list = new Collection(Cache::store('redis')->many($keys->all()));
+        } else {
+            $list = new Collection();
+        }
         $hasDone = true;
-        $keys->each(function ($key) use ($list, &$hasDone) {
-            $value = Redis::get($key);
-            $value = json_decode($value, true);
-            if ($value) {
-                $list->push($value);
-                $hasDone = $hasDone && (!in_array($value['status'], ['pending', 'processing']));
-            }
+        $list->each(function ($item) use (&$hasDone) {
+            $hasDone = $hasDone && (!in_array($item['status'], ['pending', 'processing']));
         });
         return response([
             'has_done' => $hasDone,
-            'list'     => $list,
+            'list'     => $list->values(),
         ]);
     }
 

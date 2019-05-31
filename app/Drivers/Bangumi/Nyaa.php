@@ -2,55 +2,87 @@
 
 namespace App\Drivers\Bangumi;
 
-use Converter\BBCodeConverter;
-use Converter\HTMLConverter;
+use CURLFile;
+use Exception;
+use Throwable;
+use Requests_Hooks;
+use Requests_Session;
+use Requests_Auth_Basic;
 use HtmlParser\ParserDom;
 use PHP\BitTorrent\Torrent;
+use Converter\HTMLConverter;
+use App\Drivers\Bangumi\Base;
+use Converter\BBCodeConverter;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class Nyaa extends Base
 {
-    protected $host   = 'https://nyaa.si';
+    const HOST = 'https://nyaa.si';
+
     private $announce = ['http://nyaa.tracker.wf:7777/announce'];
     private $default  = [];
+    private $session;
+    private $username;
+    private $password;
 
-    public function init()
-    {
+    public function __construct(
+        Requests_Session $session,
+        string $username,
+        string $password
+    ) {
+        // 账户密码注入
+        $this->username = $username;
+        $this->password = $password;
+
+        $session->url  = self::HOST;
+        $this->session = $session;
+
+        // 默认值注入
         $this->default = [
             'year'        => date('Y'),
             'category_id' => 1,
         ];
-    }
 
-    public function login()
-    {
-        return;
     }
 
     public function upload()
     {
-        $require = ['post_id', 'title', 'bangumi', 'author', 'content', 'torrent_name', 'torrent_path'];
-        foreach ($require as $field) {
-            if (isset($this->data[$field])) {
-                continue;
-            }
-            if (isset($this->default[$field])) {
-                $this->data[$field] = $this->default[$field];
-                continue;
-            }
-            throw new \Exception("Field {$field} is required");
-        }
-        if (!is_file($this->data['torrent_path'])) {
-            throw new \Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
+        // 数据校验
+
+        $validator = Validator::make($this->data, [
+            'post_id'      => 'required|integer',
+            'title'        => 'required|min:1',
+            'bangumi'      => 'required|min:1',
+            'author'       => 'required|min:1',
+            'content'      => 'required|min:1',
+            'torrent_name' => 'required|min:1',
+            'torrent_path' => 'required|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning(
+                '数据检验失败',
+                $validator->errors()->all()
+            );
+            throw new Exception('Parameter error');
         }
 
-        $logfile = "{$this->logdir}/nyaa-{$this->data['post_id']}.log";
+        if (!is_file($this->data['torrent_path'])) {
+            throw new Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
+        }
 
         try {
             $this->dealTorrent($this->data['torrent_path']);
-        } catch (\Throwable $t) {
-            file_put_contents($logfile, $t->getMessage() . PHP_EOL, FILE_APPEND);
+        } catch (Throwable $t) {
+            Log::warning("Nyaa: 处理种子文件失败. {$t->getMessage()}");
+            $this->logInfo($t->getMessage());
         }
-        $torrent = new \CURLFile($this->data['torrent_path'], 'application/x-bittorrent', $this->data['torrent_name']);
+        $torrent = new CURLFile(
+            $this->data['torrent_path'],
+            'application/x-bittorrent',
+            $this->data['torrent_name']
+        );
 
         $data = [
             'torrent_data' => [
@@ -63,71 +95,92 @@ class Nyaa extends Base
             'torrent'      => $torrent,
         ];
 
-        if (in_array($this->data['author'], ['幻之字幕组', '幻之字幕組'])) {
-            // $data['post[post_as_team]'] = 1;
-        }
-
         try {
             $content = $this->data['content'];
             if (strlen($content) > 10240) {
                 $dom  = $this->createDomObj($content);
                 $imgs = $dom->find('img');
                 if (isset($imgs[0]) && $imgs[0] instanceof ParserDom) {
-                    $data['torrent_data']['description'] = $imgs[0]->outerHtml() . '<p>Power by Maboroshi Sync Chan, design by Kazami Labs IT Dept.</p>';
+                    $data['torrent_data']['description'] = $imgs[0]->outerHtml() . '<p>Published by Mabors Publish Platform, design by Kazami Labs IT Dept.</p>';
                 } else {
-                    throw new \Exception('Need at least one image');
+                    throw new Exception('Need at least one image');
                 }
             }
             $html_coverter   = new HTMLConverter($data['torrent_data']['description']);
             $bbcode_coverter = new BBCodeConverter($html_coverter->toBBCode());
 
             $data['torrent_data']['description'] = $bbcode_coverter->toMarkdown();
-            $data['torrent_data']                = json_encode($data['torrent_data']);
+            // 编码 torrent_data
+            $data['torrent_data'] = json_encode($data['torrent_data']);
 
-            $hook = new \Requests_Hooks();
+            $hook = new Requests_Hooks();
             $hook->register('curl.before_send', function ($ch) use ($data) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
             });
-            $auth    = new \Requests_Auth_Basic(array($this->username, $this->password));
+            // 注入鉴权信息
+            $auth    = new Requests_Auth_Basic(array($this->username, $this->password));
             $options = [
                 'auth'  => $auth,
                 'hooks' => $hook,
             ];
-            $response = $this->getSession()->post('/api/upload', null, null, $options);
-            file_put_contents($logfile, $response->body . PHP_EOL, FILE_APPEND);
+
+            $response = $this->session->post('/api/upload', null, null, $options);
+            Log::info("Nyaa: 响应", [$response]);
+            $this->logInfo($response->body);
+
             $siteId = $this->getSiteId($response->body);
-            file_put_contents($logfile, $siteId . PHP_EOL, FILE_APPEND);
+            Log::info("Nyaa: 种子ID: {$siteId}");
+            $this->logInfo($siteId);
+
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => 'Nyaa',
                 'site_id'    => $siteId,
-                'log_file'   => $logfile,
                 'sync_state' => 'success',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => 'Nyaa',
                 'site_id'    => 0,
-                'log_file'   => $logfile,
                 'sync_state' => 'failed',
             ];
-            file_put_contents($logfile, $e->getMessage() . PHP_EOL, FILE_APPEND);
-        }
-    }
+            $this->logInfo($e->getMessage());
+            $this->callback();
 
-    protected function isLogin(): bool
-    {
-        return true;
+            Log::error("Nyaa: 上传异常. {$e->getMessage()}");
+
+            throw $e;
+        }
     }
 
     private function getSiteId(string $responseBody)
     {
         $response = json_decode($responseBody);
         if ($response === false) {
-            throw new \Exception("Invaild response");
+            throw new Exception("Invaild response");
         }
-        return $response->id;
+        if (isset($response->id)) {
+            $id = $response->id;
+        } elseif (
+            isset($response->errors) &&
+            isset($response->errors->torrent) &&
+            isset($response->errors->torrent[0])
+        ) {
+            $matches = [];
+            if (preg_match(
+                '/This\storrent\salready\sexists\s*\(#(\d+)\)/',
+                $response->errors->torrent[0],
+                $matches
+            )) {
+                $id = $matches[1];
+            } else {
+                throw new Exception(json_encode($response->errors));
+            }
+        } else {
+            throw new Exception(json_encode($response->errors));
+        }
+        return $id;
     }
 
     private function dealTorrent(string $torrentPath)
@@ -137,10 +190,5 @@ class Nyaa extends Base
             $torrent->setAnnounce($announce);
         }
         $torrent->save($torrentPath);
-    }
-
-    private function createDomObj(string $body): ParserDom
-    {
-        return new ParserDom("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>{$body}");
     }
 }

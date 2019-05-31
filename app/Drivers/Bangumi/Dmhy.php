@@ -2,47 +2,95 @@
 
 namespace App\Drivers\Bangumi;
 
+use CURLFile;
+use Exception;
+use Requests_Hooks;
+use Requests_Session;
 use HtmlParser\ParserDom;
 use App\Tools\Ocr\Ruokuai;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class Dmhy extends Base
 {
-    protected $host = 'http://share.dmhy.org';
-    private $vcode  = '/tmp/dmhy-vcode.png';
+    const HOST             = 'https://share.dmhy.org';
+    const COOKIE_MAINNAME  = 'Dmhy';
+    const COOKIE_EXPIRE    = 315360000;
+    const MAX_LOGIN_FAILED = 3;
 
-    public function init()
-    {
-        $vcodeDir = storage_path('app/bangumi/dmhy');
-        if (!is_dir($vcodeDir)) {
-            re_mkdir($vcodeDir);
+    private $vcode = 'bangumi/dmhy/vcode.png';
+    private $session;
+    private $ruokuaiApi;
+    private $username;
+    private $password;
+    private $loginFailedCount = 0;
+
+    public function __construct(
+        Requests_Session $session,
+        Ruokuai $ruokuaiApi,
+        string $username,
+        string $password
+    ) {
+        // 账户密码注入
+        $this->username = $username;
+        $this->password = $password;
+
+        $session->url = self::HOST;
+        // cookie 处理
+        $cookieJar = Cache::get('bangumi-sync:' . self::COOKIE_MAINNAME . ":{$this->username}");
+        if ($cookieJar instanceof Requests_Cookie_Jar) {
+            unset($session->options['cookies']);
+            $session->options['cookies'] = $cookieJar;
         }
-        $this->vcode = "{$vcodeDir}/vcode.png";
+        $this->session = $session;
+
+        // Ruokuai API 注入
+        $this->ruokuaiApi = $ruokuaiApi;
+
+        // 尝试登录
+        $this->login();
     }
+
     public function login()
     {
         if ($this->isLogin() === true) {
             return;
         }
-        echo "Dmhy: {$this->username} need login", PHP_EOL;
-        $response  = $this->getSession()->get('/user/login?goto=%2Ftopics%2Fadd');
+        Log::info("Dmhy: {$this->username} need login");
+        $response = $this->session->get('/user/login?goto=%2Ftopics%2Fadd');
+        // 验证码识别
         $vcodeUrl  = $this->getVcodeUrl($response->body);
         $vcode_ocr = $this->ocr($vcodeUrl);
-        $params    = [
+        Log::info("Dmhy validate code: {$vcode_ocr}");
+        $this->logInfo("Dmhy 识别的验证码: {$vcode_ocr}");
+
+        $params = [
             'goto'         => '/topics/add',
             'email'        => $this->username,
             'password'     => $this->password,
             'login_node'   => 0,
-            'cookietime'   => 315360000,
+            'cookietime'   => self::COOKIE_EXPIRE,
             'captcha_code' => strtolower($vcode_ocr),
         ];
-        echo "Dmhy validate code: {$vcode_ocr}", PHP_EOL;
-        $response = $this->getSession()->post('/user/login', null, $params);
-        // echo $ressponse->body, PHP_EOL;
+
+        $response = $this->session->post('/user/login', null, $params);
+        // $this->logInfo($response->body);
+
         $message = $this->getMessage($response->body);
-        if (mb_strpos($message, '登入成功') === false) {
-            echo "Dmhy login failed: {$message}", PHP_EOL;
-            return $this->login();
+        if (!Str::contains($message, '登入成功')) {
+            // 计数
+            ++$this->loginFailedCount;
+
+            Log::info("Dmhy login failed: {$message}");
+            $this->logInfo($response->body);
+
+            if ($this->loginFailedCount >= self::MAX_LOGIN_FAILED) {
+                throw new Exception('Dmhy Login failed with ' . self::MAX_LOGIN_FAILED . 'try(ies).');
+            } else {
+                return $this->login();
+            }
         } else {
             return;
         }
@@ -58,14 +106,14 @@ class Dmhy extends Base
                 $this->data[$field] = $this->default[$field];
                 continue;
             }
-            throw new \Exception("Field {$field} is required");
+            throw new Exception("Field {$field} is required");
         }
 
         if (!is_file($this->data['torrent_path'])) {
-            throw new \Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
+            throw new Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
         }
 
-        $torrent = new \CURLFile($this->data['torrent_path'], 'application/x-bittorrent', $this->data['torrent_name']);
+        $torrent = new CURLFile($this->data['torrent_path'], 'application/x-bittorrent', $this->data['torrent_name']);
 
         if ($this->data['author'] == '幻之字幕組') {
             $this->data['author'] = '幻之字幕组';
@@ -86,50 +134,68 @@ class Dmhy extends Base
         if ($data['team_id'] === false) {
             $data['team_id'] = 0;
         }
-        $logfile = "{$this->logdir}/dmhy-{$this->data['post_id']}.log";
 
-        $hook = new \Requests_Hooks();
+        $hook = new Requests_Hooks();
         $hook->register('curl.before_send', function ($ch) use ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         });
         try {
-            $response = $this->getSession()->post('/topics/add', [], null, ['hooks' => $hook]);
-            file_put_contents($logfile, $response->body . PHP_EOL, FILE_APPEND);
+            $response = $this->session->post('/topics/add', [], null, ['hooks' => $hook]);
+
+            Log::info('Dmhy 上传响应', [$response]);
+            $this->logInfo($response->body);
+
             $message = $this->getMessage($response->body);
-            if (mb_strpos($message, '成功') === false) {
-                throw new \Exception("Upload failed: {$message}");
+            if (Str::contains($message, '成功') === false) {
+                throw new Exception("Upload failed: {$message}");
             }
             $siteId = $this->getSiteId($this->data['title']);
-            file_put_contents($logfile, $siteId . PHP_EOL, FILE_APPEND);
+
+            Log::info("Dmhy 上传 ID {$siteId}");
+            $this->logInfo($siteId);
+
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => '动漫花园',
                 'site_id'    => $siteId,
-                'log_file'   => $logfile,
                 'sync_state' => 'success',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => '动漫花园',
                 'site_id'    => 0,
-                'log_file'   => $logfile,
                 'sync_state' => 'failed',
             ];
-            file_put_contents($logfile, $e->getMessage() . PHP_EOL, FILE_APPEND);
+            $this->logInfo($e->getMessage());
+            $this->callback();
+
+            Log::info("Dmhy 上传异常 {$e->getMessage()}", [$e]);
+
+            throw $e;
         }
 
     }
 
+    public function __destruct()
+    {
+        // Cookie 缓存
+        Cache::set(
+            'bangumi-sync:' . self::COOKIE_MAINNAME . ":{$this->username}",
+            $this->session->options['cookies'],
+            self::COOKIE_EXPIRE
+        );
+    }
+
     protected function isLogin(): bool
     {
-        $response = $this->getSession()->get('/topics/add');
+        $response = $this->session->get('/topics/add');
         $dom      = $this->dealResponse($response->body);
         $ls       = $dom->find("a[href=/user/logout]");
         return is_array($ls) && count($ls) > 0;
     }
 
-    private function getVcodeUrl(string $body)
+    private function getVcodeUrl(string $body): string
     {
         $regx    = '/<img id="captcha_img".*? src="(.+?)"/';
         $matches = [];
@@ -140,21 +206,24 @@ class Dmhy extends Base
         }
     }
 
-    private function ocr(string $url)
+    private function ocr(string $url): string
     {
-        $vcode_filepath = $this->vcode;
-        $response       = $this->getSession()->get($url);
-        file_put_contents($vcode_filepath, $response->body);
-        $config = Config::get('ruokuai');
-        if (empty($config['username']) || empty($config['password'])) {
-            throw new \Exception('Failed to load ruokuai config');
-        }
-        $ocr    = new Ruokuai($config['username'], $config['password']);
-        $result = $ocr->forImageFile($vcode_filepath);
-        return $result;
+        $response = $this->session->get($url);
+        Storage::put($this->vcode, $response->body);
+
+        // 暂定不做异常处理，直接任由抛出异常触发队列失败
+        // $result = '';
+        // try {
+        //     $result = $this->ruokuaiApi->forImageFile(Storage::path($this->vcode));
+        // } catch (Exception $e) {
+
+        // }
+        // return $result;
+
+        return $this->ruokuaiApi->forImageFile(Storage::path($this->vcode));
     }
 
-    private function getMessage(string $body)
+    private function getMessage(string $body): string
     {
         $regx    = '/<li class="text_bold text_blue">(.*?)</i';
         $matches = [];
@@ -165,9 +234,9 @@ class Dmhy extends Base
         }
     }
 
-    private function getSiteId(string $title)
+    private function getSiteId(string $title): int
     {
-        $response = $this->getSession()->get('/topics/mlist/scope/team');
+        $response = $this->session->get('/topics/mlist/scope/team');
         $dom      = $this->dealResponse($response->body);
         $alinks   = $dom->find('table#topic_list>tbody>tr>td.title>a');
         $siteId   = 0;

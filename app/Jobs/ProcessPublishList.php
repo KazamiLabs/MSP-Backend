@@ -6,9 +6,11 @@ use App\Post;
 use Exception;
 use App\BangumiSetting;
 use Illuminate\Bus\Queueable;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,6 +18,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 class ProcessPublishList implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    const SUCCESS_EXPIRE = 3600;
+    const FAILED_EXPIRE  = 86400;
 
     protected $post;
     protected $setting;
@@ -30,11 +35,11 @@ class ProcessPublishList implements ShouldQueue
         //
         $this->post    = $post;
         $this->setting = $setting;
-        Redis::set($post->getQueueKey($setting), json_encode([
+        Cache::store('redis')->set($post->getQueueKey($setting), [
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'pending',
-        ]));
+        ]);
     }
 
     /**
@@ -49,42 +54,36 @@ class ProcessPublishList implements ShouldQueue
         $setting = $this->setting;
 
         // 标记队列为处理中
-        Redis::set($post->getQueueKey($setting), json_encode([
+        Cache::store('redis')->set($post->getQueueKey($setting), [
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'processing',
-        ]));
+        ]);
 
         // 开始处理
         $class = "\\App\\Drivers\\Bangumi\\{$setting->sitedriver}";
-        if (!class_exists($class)) {
-            throw new \Exception("Class not exists! {$class}");
-        }
-        $driver = new $class(
-            $setting->username,
-            $setting->password,
-            ''
-        );
+
+        $driver = App::make($class, [
+            'username' => $setting->username,
+            'password' => $setting->password,
+        ]);
+
         $driver->post_id      = $post->id;
         $driver->author       = $post->post_author;
         $driver->title        = $post->post_title;
         $driver->content      = $post->post_content;
         $driver->bangumi      = $post->bangumi->title;
         $driver->torrent_name = $post->bangumi->filename;
-        $driver->torrent_path = storage_path("app/{$post->bangumi->filepath}");
-        $driver->login();
+        $driver->torrent_path = Storage::path($post->bangumi->filepath);
         $driver->upload();
         $driver->callback();
 
-        // $time = rand(30, 60);
-        // sleep($time);
-
         // 标记队列为已完成
-        Redis::set($post->getQueueKey($setting), json_encode([
+        Cache::store('redis')->set($post->getQueueKey($setting), [
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'finished',
-        ]), 'EX', '86400');
+        ], self::SUCCESS_EXPIRE);
     }
 
     /**
@@ -98,11 +97,11 @@ class ProcessPublishList implements ShouldQueue
         // 任务失败时标记失败
         $post    = $this->post;
         $setting = $this->setting;
-        Log::info('Info', [$post, $setting]);
-        Redis::set($post->getQueueKey($setting), json_encode([
+        Log::error("Queue Failed: {$exception->getMessage()}", [$post, $setting]);
+        Cache::store('redis')->set($post->getQueueKey($setting), [
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'failed',
-        ]));
+        ], self::FAILED_EXPIRE);
     }
 }
