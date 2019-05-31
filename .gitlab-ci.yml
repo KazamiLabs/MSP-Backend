@@ -18,6 +18,7 @@ deploy_sit:
     - composer global require "laravel/envoy=~1.0"
     - wget ${ENVOY_URL} -O Envoy.blade.php
     - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${SIT_APP_DIR} --app_user=${APP_USER} --branch=${CI_COMMIT_REF_NAME}
+    - sudo supervisorctl restart mabors-sit-worker:*
 deploy_prod:
   stage: deploy_prod
   tags:
@@ -28,3 +29,4 @@ deploy_prod:
     - composer global require "laravel/envoy=~1.0"
     - wget ${ENVOY_URL} -O Envoy.blade.php
     - ~/.composer/vendor/bin/envoy run deploy --repository=${CI_REPOSITORY_URL} --app_dir=${PROD_APP_DIR} --app_user=${APP_USER} --branch=${CI_COMMIT_REF_NAME}
+    - sudo supervisorctl restart mabors-worker:*
