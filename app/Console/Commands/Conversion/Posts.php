@@ -3,13 +3,17 @@
 namespace App\Console\Commands\Conversion;
 
 use App\Bangumi;
+use App\BangumiTransferLog;
 use App\Post;
 use App\User;
 use Converter\BBCodeConverter;
 use Converter\HTMLConverter;
 use Illuminate\Console\Command;
+use Illuminate\Http\File;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Posts extends Command
 {
@@ -58,6 +62,9 @@ class Posts extends Command
                 ]
             ),
         ]);
+
+        // 载入旧程序路径
+        Config::set('mabors.wordpress.root_path', env('WP_ROOT_PATH'));
     }
 
     /**
@@ -124,13 +131,36 @@ class Posts extends Command
                     if ($postData->filename) {
                         $bangumi = new Bangumi([
                             'filename'   => $postData->filename,
-                            'filepath'   => $postData->filepath,
+                            'filepath'   => Str::replaceFirst('/mbrs-torrent', 'private/torrent', $postData->filepath),
                             'group_name' => $postData->author,
                             'title'      => $postData->title,
                             'year'       => $postData->year,
                         ]);
+
+                        Storage::putFileAs(
+                            'private/torrent',
+                            new File(Config::get('mabors.wordpress.root_path') . "/wp-content{$postData->filepath}"),
+                            pathinfo($postData->filepath, PATHINFO_BASENAME)
+                        );
                         $post->bangumi()->save($bangumi);
                     }
+
+                    // 传输日志查询
+                    $transferLogs = DB::connection('wpmysql')
+                        ->table('ms_posts_bangumi_transferlog')
+                        ->where('post_id', $postData->ID)
+                        ->get()
+                        ->each(function ($logData) use ($post) {
+                            $log = new BangumiTransferLog();
+                            $log->fill((array) $logData);
+                            $log->sitedriver = Str::replaceFirst('kl\\\\', '', $log->sitedriver);
+                            // 日志文件名拆分与重新组装
+                            $logFilePath = Str::after($logData->log_file, 'mbrs-cron');
+                            $logFilePath = Config::get('mabors.wordpress.root_path') . "/mbrs-cron{$logFilePath}";
+                            $log->log    = file_get_contents($logFilePath);
+                            $post->bangumiTransferLogs()->save($log);
+                        });
+
                     $post = null;
                     $bar->advance();
                 });
