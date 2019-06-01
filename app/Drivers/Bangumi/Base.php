@@ -1,8 +1,8 @@
 <?php
 namespace App\Drivers\Bangumi;
 
-use Exception;
 use App\BangumiTransferLog;
+use Exception;
 
 abstract class Base
 {
@@ -44,7 +44,7 @@ abstract class Base
         $transferLog = new BangumiTransferLog();
         $transferLog->fill($data);
         // 补充必要的日志数据数据
-        $transferLog->sitedriver = get_called_class();
+        $transferLog->sitedriver = class_basename($this);
         $transferLog->log        = $this->logBuffer;
         $transferLog->save();
     }
