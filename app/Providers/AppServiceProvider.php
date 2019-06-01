@@ -2,11 +2,12 @@
 
 namespace App\Providers;
 
-use Requests_Session;
+use App\Tools\Ocr\JdWanXiang;
 use App\Tools\Ocr\Ruokuai;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Requests_Session;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,7 +31,11 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         $this->app->singleton(Ruokuai::class, function ($app) {
-            return new Ruokuai(Config::get('ruokuai.username'), Config::get('ruokuai.password'));
+            return new Ruokuai(Config::get('ocr.ruokuai.username'), Config::get('ocr.ruokuai.password'));
+        });
+
+        $this->app->singleton(JdWanXiang::class, function ($app) {
+            return new JdWanXiang(Config::get('ocr.jdwanxiang.appkey'));
         });
 
         $this->app->singleton(Requests_Session::class, function ($app) {

@@ -2,16 +2,17 @@
 
 namespace App\Drivers\Bangumi;
 
+use App\Tools\Ocr\JdWanXiang;
 use CURLFile;
 use Exception;
+use HtmlParser\ParserDom;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Requests_Cookie_Jar;
 use Requests_Hooks;
 use Requests_Session;
-use HtmlParser\ParserDom;
-use App\Tools\Ocr\Ruokuai;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 class Dmhy extends Base
 {
@@ -22,14 +23,14 @@ class Dmhy extends Base
 
     private $vcode = 'bangumi/dmhy/vcode.png';
     private $session;
-    private $ruokuaiApi;
+    private $ocr;
     private $username;
     private $password;
     private $loginFailedCount = 0;
 
     public function __construct(
         Requests_Session $session,
-        Ruokuai $ruokuaiApi,
+        JdWanXiang $ocr,
         string $username,
         string $password
     ) {
@@ -46,8 +47,8 @@ class Dmhy extends Base
         }
         $this->session = $session;
 
-        // Ruokuai API 注入
-        $this->ruokuaiApi = $ruokuaiApi;
+        // OCR API 验证码识别注入
+        $this->ocr = $ocr;
 
         // 尝试登录
         $this->login();
@@ -169,8 +170,9 @@ class Dmhy extends Base
             ];
             $this->logInfo($e->getMessage());
             $this->callback();
+            $this->cacheCookie();
 
-            Log::info("Dmhy 上传异常 {$e->getMessage()}", [$e]);
+            Log::error("Dmhy 上传异常 {$e->getMessage()}", [$e]);
 
             throw $e;
         }
@@ -179,20 +181,13 @@ class Dmhy extends Base
 
     public function __destruct()
     {
-        // Cookie 缓存
-        Cache::set(
-            'bangumi-sync:' . self::COOKIE_MAINNAME . ":{$this->username}",
-            $this->session->options['cookies'],
-            self::COOKIE_EXPIRE
-        );
+        $this->cacheCookie();
     }
 
-    protected function isLogin(): bool
+    private function isLogin(): bool
     {
-        $response = $this->session->get('/topics/add');
-        $dom      = $this->dealResponse($response->body);
-        $ls       = $dom->find("a[href=/user/logout]");
-        return is_array($ls) && count($ls) > 0;
+        $response = $this->session->get('/user', [], ['follow_redirects' => false]);
+        return $response->status_code === 200;
     }
 
     private function getVcodeUrl(string $body): string
@@ -214,13 +209,13 @@ class Dmhy extends Base
         // 暂定不做异常处理，直接任由抛出异常触发队列失败
         // $result = '';
         // try {
-        //     $result = $this->ruokuaiApi->forImageFile(Storage::path($this->vcode));
+        //     $result = $this->ocr->forImageFile(Storage::path($this->vcode));
         // } catch (Exception $e) {
 
         // }
         // return $result;
 
-        return $this->ruokuaiApi->forImageFile(Storage::path($this->vcode));
+        return $this->ocr->forImageFile(Storage::path($this->vcode));
     }
 
     private function getMessage(string $body): string
@@ -258,5 +253,15 @@ class Dmhy extends Base
     private function dealResponse(string $body): ParserDom
     {
         return new ParserDom("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>{$body}");
+    }
+
+    private function cacheCookie()
+    {
+        // Cookie 缓存
+        Cache::set(
+            'bangumi-sync:' . self::COOKIE_MAINNAME . ":{$this->username}",
+            $this->session->options['cookies'],
+            self::COOKIE_EXPIRE
+        );
     }
 }
