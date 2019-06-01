@@ -46,7 +46,7 @@ class Post extends Model
         'guid',
         'menu_order',
         'post_type',
-        'post_mime_type',
+        // 'post_mime_type',
     ];
 
     protected $hidden = [
