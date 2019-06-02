@@ -26,18 +26,7 @@ class UserController extends Controller
     public function getList(Request $request)
     {
         $limit = $request->get('limit', 15);
-        $users = User::select(
-            'id',
-            'name',
-            'email',
-            'nicename',
-            'avatar',
-            'timezone',
-            'registered_at',
-            'is_admin',
-            'status'
-        )
-            ->orderBy('id', 'desc')
+        $users = User::orderBy('id', 'desc')
             ->paginate($limit);
         return $users;
     }
@@ -46,7 +35,14 @@ class UserController extends Controller
     {
         $id   = $request->post('id');
         $user = User::findOrFail($id);
-        $data = $request->only(['nicename', 'email', 'name', 'password', 'status']);
+        $data = $request->only([
+            'nicename',
+            'email',
+            'name',
+            'password',
+            'is_admin',
+            'status',
+        ]);
         $user->fill($data);
         $user->save();
         return response([], 200);
@@ -54,7 +50,14 @@ class UserController extends Controller
 
     public function add(Request $request)
     {
-        $data = $request->only(['nicename', 'email', 'name', 'password', 'status']);
+        $data = $request->only([
+            'nicename',
+            'email',
+            'name',
+            'password',
+            'is_admin',
+            'status',
+        ]);
         $user = new User($data);
         $user->save();
         return response([], 200);

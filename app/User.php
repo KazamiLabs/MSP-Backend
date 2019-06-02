@@ -14,13 +14,21 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+    const IS_ADMIN_YES = 1;
+    const IS_ADMIN_NO  = 0;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'nicename', 'email', 'password', 'status',
+        'name',
+        'nicename',
+        'email',
+        'password',
+        'is_admin',
+        'status',
     ];
 
     /**
@@ -29,7 +37,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'avatar', 'password', 'remember_token',
+        'avatar',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -78,6 +88,12 @@ class User extends Authenticatable
             return;
         }
         $this->attributes['password'] = Hash::make($password);
+    }
+
+    public function setIsAdminAttribute(int $isAdmin)
+    {
+        $this->attributes['is_admin'] = in_array($isAdmin, [self::IS_ADMIN_YES, self::IS_ADMIN_NO]) ?
+        $isAdmin : self::IS_ADMIN_NO;
     }
 
     /**
