@@ -2,19 +2,19 @@
 
 namespace App\Drivers\Bangumi;
 
-use CURLFile;
-use Exception;
-use Throwable;
-use Requests_Hooks;
-use Requests_Session;
-use Requests_Auth_Basic;
-use HtmlParser\ParserDom;
-use PHP\BitTorrent\Torrent;
-use Converter\HTMLConverter;
 use App\Drivers\Bangumi\Base;
 use Converter\BBCodeConverter;
+use Converter\HTMLConverter;
+use CURLFile;
+use Exception;
+use HtmlParser\ParserDom;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use PHP\BitTorrent\Torrent;
+use Requests_Auth_Basic;
+use Requests_Hooks;
+use Requests_Session;
+use Throwable;
 
 class Nyaa extends Base
 {
@@ -38,18 +38,11 @@ class Nyaa extends Base
         $session->url  = self::HOST;
         $this->session = $session;
 
-        // 默认值注入
-        $this->default = [
-            'year'        => date('Y'),
-            'category_id' => 1,
-        ];
-
     }
 
     public function upload()
     {
         // 数据校验
-
         $validator = Validator::make($this->data, [
             'post_id'      => 'required|integer',
             'title'        => 'required|min:1',

@@ -60,11 +60,15 @@ class Dmhy extends Base
         if ($this->isLogin() === true) {
             return;
         }
+
         Log::info("Dmhy: {$this->username} need login");
+        $this->logInfo("Dmhy: {$this->username} need login");
+
         $response = $this->session->get('/user/login?goto=%2Ftopics%2Fadd');
         // 验证码识别
         $vcodeUrl  = $this->getVcodeUrl($response->body);
         $vcode_ocr = $this->ocr($vcodeUrl);
+
         Log::info("Dmhy validate code: {$vcode_ocr}");
         $this->logInfo("Dmhy 识别的验证码: {$vcode_ocr}");
 
@@ -188,6 +192,10 @@ class Dmhy extends Base
     private function isLogin(): bool
     {
         $response = $this->session->get('/user', [], ['follow_redirects' => false]);
+
+        Log::info("Dmhy 登录检测: {$response->status_code}", [$response]);
+        $this->logInfo("Dmhy 登录检测: {$response->status_code}");
+
         return $response->status_code === 200;
     }
 
