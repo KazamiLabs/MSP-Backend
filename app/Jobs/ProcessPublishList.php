@@ -2,18 +2,18 @@
 
 namespace App\Jobs;
 
+use App\BangumiSetting;
 use App\Post;
 use Exception;
-use App\BangumiSetting;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessPublishList implements ShouldQueue
 {
@@ -72,6 +72,7 @@ class ProcessPublishList implements ShouldQueue
         $driver->author       = $post->post_author;
         $driver->title        = $post->post_title;
         $driver->content      = $post->post_content;
+        $driver->year         = $post->bangumi->year;
         $driver->bangumi      = $post->bangumi->title;
         $driver->torrent_name = $post->bangumi->filename;
         $driver->torrent_path = Storage::path($post->bangumi->filepath);

@@ -2,21 +2,57 @@
 
 namespace App\Drivers\Bangumi;
 
+use App\Drivers\Bangumi\Base;
 use Converter\HTMLConverter;
+use CURLFile;
+use Exception;
 use HtmlParser\ParserDom;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Requests_Cookie_Jar;
+use Requests_Session;
 
 class AcgRip extends Base
 {
-    protected $host   = 'https://acg.rip';
+    const HOST            = 'https://acg.rip';
+    const COOKIE_MAINNAME = 'AcgRip';
+    const COOKIE_EXPIRE   = 315360000;
+
     private $year_lst = [];
     private $default  = [];
+    private $session;
+    private $username;
+    private $password;
 
-    public function init()
-    {
+    public function __construct(
+        Requests_Session $session,
+        string $username,
+        string $password
+    ) {
+        // 账户密码注入
+        $this->username = $username;
+        $this->password = $password;
+
+        $session->url = self::HOST;
+
+        // cookie 处理
+        $cookieJar = Cache::get('bangumi-sync:' . self::COOKIE_MAINNAME . ":{$this->username}");
+        if ($cookieJar instanceof Requests_Cookie_Jar) {
+            unset($session->options['cookies']);
+            $session->options['cookies'] = $cookieJar;
+        }
+
+        $this->session = $session;
+
+        // 默认值预置
         $this->default = [
             'year'        => date('Y'),
             'category_id' => 1,
         ];
+
+        // 尝试登录
+        $this->login();
     }
 
     public function login()
@@ -24,7 +60,10 @@ class AcgRip extends Base
         if ($this->isLogin()) {
             return;
         }
-        echo "ACG.RIP: {$this->username} need login", PHP_EOL;
+
+        Log::info("ACG.RIP: {$this->username} need login");
+        $this->logInfo("ACG.RIP: {$this->username} need login");
+
         $data = [
             'utf8'               => '✓',
             'authenticity_token' => $this->getToken('/users/sign_in'),
@@ -34,27 +73,39 @@ class AcgRip extends Base
             'commit'             => '登录',
         ];
 
-        $this->getSession()->post('/users/sign_in', null, $data);
+        $response = $this->session->post('/users/sign_in', null, $data);
+
+        Log::info("AcgRip 登录响应", [$response]);
+        $this->logInfo($response->body);
 
     }
 
     public function upload()
     {
-        $require = ['post_id', 'title', 'bangumi', 'author', 'content', 'year', 'torrent_name', 'torrent_path', 'category_id'];
-        foreach ($require as $field) {
-            if (isset($this->data[$field])) {
-                continue;
-            }
-            if (isset($this->default[$field])) {
-                $this->data[$field] = $this->default[$field];
-                continue;
-            }
-            throw new \Exception("Field {$field} is required");
+        // 数据校验
+        $validator = Validator::make($this->data, [
+            'post_id'      => 'required|integer',
+            'title'        => 'required|min:1',
+            'bangumi'      => 'required|min:1',
+            'author'       => 'required|min:1',
+            'content'      => 'required|min:1',
+            'year'         => 'required|integer|min:2000',
+            'torrent_name' => 'required|min:1',
+            'torrent_path' => 'required|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning(
+                '数据检验失败',
+                $validator->errors()->all()
+            );
+            throw new Exception('Parameter error');
         }
+
         if (!is_file($this->data['torrent_path'])) {
-            throw new \Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
+            throw new Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
         }
-        $torrent = new \CURLFile($this->data['torrent_path'], 'application/x-bittorrent', $this->data['torrent_name']);
+        $torrent = new CURLFile($this->data['torrent_path'], 'application/x-bittorrent', $this->data['torrent_name']);
 
         $coverter = new HTMLConverter($this->data['content']);
 
@@ -64,11 +115,10 @@ class AcgRip extends Base
             'year'               => $this->data['year'],
             'post[torrent]'      => $torrent,
             'authenticity_token' => $this->getToken('/cp/posts/upload'),
-            'post[category_id]'  => $this->data['category_id'],
+            'post[category_id]'  => $this->default['category_id'],
             'commit'             => '发布',
             'utf8'               => '✓',
         ];
-        $logfile = "{$this->logdir}/acgrip-{$this->data['post_id']}.log";
 
         // $data['series_id'] = $this->getSeries($data['year'], $this->data['bangumi']);
 
@@ -81,15 +131,20 @@ class AcgRip extends Base
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         });
         try {
-            $response = $this->getSession()->post('/cp/posts', ['Referer' => 'https://acg.rip/cp/posts/upload'], null, ['hooks' => $hook]);
-            file_put_contents($logfile, $response->body . PHP_EOL, FILE_APPEND);
+            $response = $this->session->post('/cp/posts', ['Referer' => 'https://acg.rip/cp/posts/upload'], null, ['hooks' => $hook]);
+
+            Log::info('AcgRip 上传响应', [$response]);
+            $this->logInfo($response->body);
+
             $siteId = $this->getSiteId($this->data['title']);
-            file_put_contents($logfile, $siteId . PHP_EOL, FILE_APPEND);
+
+            Log::info("AcgRip 上传 ID {$siteId}");
+            $this->logInfo($siteId);
+
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => 'ACG.RIP',
                 'site_id'    => $siteId,
-                'log_file'   => $logfile,
                 'sync_state' => 'success',
             ];
         } catch (\Exception $e) {
@@ -97,26 +152,38 @@ class AcgRip extends Base
                 'post_id'    => $this->data['post_id'],
                 'site'       => 'ACG.RIP',
                 'site_id'    => 0,
-                'log_file'   => $logfile,
                 'sync_state' => 'failed',
             ];
-            file_put_contents($logfile, $e->getMessage() . PHP_EOL, FILE_APPEND);
+            $this->logInfo($e->getMessage());
+            $this->callback();
+            $this->cacheCookie();
+
+            Log::error("AcgRip 上传异常 {$e->getMessage()}", [$e]);
+
+            throw $e;
         }
+    }
+
+    public function __destruct()
+    {
+        $this->cacheCookie();
     }
 
     protected function isLogin(): bool
     {
-        $response = $this->getSession()->get('/ajax/session_bar');
-        $dom      = $this->dealResponse($response->body);
-        $ls       = $dom->find("a[href=/users/sign_out]");
-        return is_array($ls) && count($ls) > 0;
+        $response = $this->session->get('/cp/posts', [], ['follow_redirects' => false]);
+
+        Log::info("Acgrip 登录检测: {$response->status_code}", [$response]);
+        $this->logInfo("Acgrip 登录检测: {$response->status_code}");
+
+        return $response->status_code === 200;
     }
 
     private function getToken(string $url): string
     {
-        $response = $this->getSession()->get($url);
+        $response = $this->session->get($url);
         if (empty($response->body)) {
-            throw new \Exception("NON Response on {$url}");
+            throw new Exception("NON Response on {$url}");
         }
         $regx    = '/<input [^>]*?\sname="authenticity_token" value="(.*?)"/';
         $matches = [];
@@ -129,9 +196,9 @@ class AcgRip extends Base
 
     private function getSeries(string $year, string $bangumiTitle)
     {
-        $series_rsp   = $this->getSession()->get("/ajax/get_series?year={$year}");
+        $series_rsp   = $this->session->get("/ajax/get_series?year={$year}");
         $series_o_lst = json_decode($series_rsp->body, 1);
-        $series_lst   = \array_column($series_o_lst, 'name', 'id');
+        $series_lst   = array_column($series_o_lst, 'name', 'id');
         $series_id    = 0;
         foreach ($series_lst as $key => $series) {
             if (mb_strstr($series, $bangumiTitle, false, 'utf-8')) {
@@ -147,9 +214,9 @@ class AcgRip extends Base
         return new ParserDom("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>{$body}");
     }
 
-    public function getSiteId(string $title)
+    private function getSiteId(string $title)
     {
-        $response = $this->getSession()->get("/cp/posts");
+        $response = $this->session->get("/cp/posts");
         $dom      = $this->dealResponse($response->body);
         $ls       = $dom->find("div.list-group-item-heading a");
         $siteId   = 0;
@@ -166,5 +233,15 @@ class AcgRip extends Base
             }
         }
         return $siteId;
+    }
+
+    private function cacheCookie()
+    {
+        // Cookie 缓存
+        Cache::set(
+            'bangumi-sync:' . self::COOKIE_MAINNAME . ":{$this->username}",
+            $this->session->options['cookies'],
+            self::COOKIE_EXPIRE
+        );
     }
 }
