@@ -1,31 +1,59 @@
 <?php
 namespace App\Drivers\Bangumi;
 
+use App\Drivers\Bangumi\Base;
+use CURLFile;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Requests_Hooks;
+use Requests_Session;
+
 class Kisssub extends Base
 {
-    protected $host      = 'http://www.kisssub.org';
-    private $myteam      = [];
-    private $deal_myteam = [];
+    const HOST = 'http://www.kisssub.org';
+    private $session;
+    private $username;
+    private $password;
 
-    public function login()
-    {
-        return true;
+    public function __construct(
+        Requests_Session $session,
+        string $username,
+        string $password
+    ) {
+        // user id, user key 注入
+        $this->username = $username;
+        $this->password = $password;
+
+        $session->url = self::HOST;
+
+        $this->session = $session;
     }
 
     public function upload()
     {
-        $require = ['author', 'title', 'content', 'torrent_name', 'torrent_path'];
-        foreach ($require as $field) {
-            if (!isset($this->data[$field])) {
-                throw new \Exception("Field {$field} is required");
-            }
+        // 数据校验
+        $validator = Validator::make($this->data, [
+            'post_id'      => 'required|integer',
+            'title'        => 'required|min:1',
+            'author'       => 'required|min:1',
+            'content'      => 'required|min:1',
+            'torrent_name' => 'required|min:1',
+            'torrent_path' => 'required|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning(
+                '数据检验失败',
+                $validator->errors()->all()
+            );
+            throw new Exception('Parameter error');
         }
-        $logfile = "{$this->logdir}/kisssub-{$this->data['post_id']}.log";
 
         if (!is_file($this->data['torrent_path'])) {
-            throw new \Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
+            throw new Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
         }
-        $torrent = new \CURLFile($this->data['torrent_path'], 'application/octet-stream', $this->data['torrent_name']);
+        $torrent = new CURLFile($this->data['torrent_path'], 'application/octet-stream', $this->data['torrent_name']);
 
         $data = [
             'sort_id'     => '1',
@@ -41,7 +69,7 @@ class Kisssub extends Base
             $data['sort_id'] = '6';
         }
 
-        $hook = new \Requests_Hooks();
+        $hook = new Requests_Hooks();
         $hook->register('curl.before_send', function ($ch) use ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         });
@@ -50,30 +78,35 @@ class Kisssub extends Base
         ];
 
         try {
-            $response = $this->getSession()->post('/addon.php?r=api/post/76cad81b', null, null, $options);
-            file_put_contents($logfile, $response->body . PHP_EOL, FILE_APPEND);
-            $data           = json_decode($response->body);
+            $response = $this->session->post('/addon.php?r=api/post/76cad81b', null, null, $options);
+
+            Log::info('Kisssub 上传响应', [$response]);
+            $this->logInfo($response->body);
+
+            $data = json_decode($response->body);
+
+            Log::info("Kisssub 上传 ID {$data->info_hash}");
+            $this->logInfo($data->info_hash);
+
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => '爱恋动漫',
                 'site_id'    => $data->info_hash,
-                'log_file'   => $logfile,
                 'sync_state' => $data->status,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->callback = [
                 'post_id'    => $this->data['post_id'],
                 'site'       => '爱恋动漫',
                 'site_id'    => 0,
-                'log_file'   => $logfile,
                 'sync_state' => 'failed',
             ];
-            file_put_contents($logfile, $e->getMessage() . PHP_EOL, FILE_APPEND);
-        }
-    }
+            $this->logInfo($e->getMessage());
+            $this->callback();
 
-    protected function isLogin(): bool
-    {
-        return true;
+            Log::error("Kisssub 上传异常 {$e->getMessage()}", [$e]);
+
+            throw $e;
+        }
     }
 }
