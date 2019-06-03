@@ -2,7 +2,8 @@
 
 namespace App\Providers;
 
-use App\Tools\Ocr\JdWanXiang;
+use App\Tools\Ocr\JdWanXiang\JdWanXiang;
+use App\Tools\Ocr\JdWanXiang\Showapi;
 use App\Tools\Ocr\Ruokuai;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -34,8 +35,8 @@ class AppServiceProvider extends ServiceProvider
             return new Ruokuai(Config::get('ocr.ruokuai.username'), Config::get('ocr.ruokuai.password'));
         });
 
-        $this->app->singleton(JdWanXiang::class, function ($app) {
-            return new JdWanXiang(Config::get('ocr.jdwanxiang.appkey'));
+        $this->app->bind(JdWanXiang::class, function ($app) {
+            return $app->make(Showapi::class, ['appkey' => Config::get('ocr.jdwanxiang.appkey')]);
         });
 
         $this->app->singleton(Requests_Session::class, function ($app) {

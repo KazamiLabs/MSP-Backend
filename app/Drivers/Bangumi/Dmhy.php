@@ -2,7 +2,8 @@
 
 namespace App\Drivers\Bangumi;
 
-use App\Tools\Ocr\JdWanXiang;
+use App\Drivers\Bangumi\Base;
+use App\Tools\Ocr\JdWanXiang\JdWanXiang;
 use CURLFile;
 use Exception;
 use HtmlParser\ParserDom;
@@ -206,16 +207,15 @@ class Dmhy extends Base
         $response = $this->session->get($url);
         Storage::put($this->vcode, $response->body);
 
-        // 暂定不做异常处理，直接任由抛出异常触发队列失败
-        // $result = '';
-        // try {
-        //     $result = $this->ocr->forImageFile(Storage::path($this->vcode));
-        // } catch (Exception $e) {
-
-        // }
-        // return $result;
-
-        return $this->ocr->forImageFile(Storage::path($this->vcode));
+        $result = '';
+        try {
+            $result = $this->ocr->forImageFile(Storage::path($this->vcode));
+        } catch (Exception $e) {
+            // OCR 识别异常记录到日志
+            Log::error("OCR 识别异常: {$e->getMessage()}", [$e]);
+            $this->logInfo("OCR 识别异常: {$e->getMessage()}");
+        }
+        return $result;
     }
 
     private function getMessage(string $body): string
