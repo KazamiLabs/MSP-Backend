@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Tools\Ocr\JdWanXiang\JdWanXiang;
 use App\Tools\Ocr\JdWanXiang\Showapi;
+use App\Tools\Ocr\JdWanXiang\Xunhu;
 use App\Tools\Ocr\Ruokuai;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -36,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(JdWanXiang::class, function ($app) {
+            // $random = [Showapi::class, Xunhu::class];
+            // return $app->make($random[rand(0, 1)], ['appkey' => Config::get('ocr.jdwanxiang.appkey')]);
             return $app->make(Showapi::class, ['appkey' => Config::get('ocr.jdwanxiang.appkey')]);
         });
 
