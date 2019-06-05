@@ -26,7 +26,7 @@ class AuthController extends Controller
         ];
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $token = $request->user()->setToken(self::TOKEN_TTL);
