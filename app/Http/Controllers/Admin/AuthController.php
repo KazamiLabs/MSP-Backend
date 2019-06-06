@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,6 +65,12 @@ class AuthController extends Controller
         $request->user()->destroyToken();
         $token = $request->user()->setToken(self::TOKEN_TTL);
         return $this->respondWithToken($token);
+    }
+
+    public function toPortal(Request $request)
+    {
+        Auth::guard('web')->login($request->user());
+        return ['message' => 'ok'];
     }
 
     /**

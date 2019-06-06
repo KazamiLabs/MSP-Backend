@@ -37,6 +37,9 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/user/{id}/avatar', function(){
+Route::get('/user/{id}/avatar', function () {
     return response()->file(storage_path('app/private/avatar/default.jpg'));
 })->name('user.avatar');
+
+Route::middleware('auth:api')
+    ->get('/api/auth/to-portal', 'Admin\AuthController@toPortal');
