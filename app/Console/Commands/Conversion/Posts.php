@@ -124,7 +124,7 @@ class Posts extends Command
 
                     $post   = new Post();
                     $author = User::find($postData->post_author);
-                    $post->fill((array) $postData);
+                    $post->fill((array)$postData);
                     $post->cover = $cover;
                     $post->author()->associate($author);
                     $post->save();
@@ -146,13 +146,13 @@ class Posts extends Command
                     }
 
                     // 传输日志查询
-                    $transferLogs = DB::connection('wpmysql')
+                    DB::connection('wpmysql')
                         ->table('ms_posts_bangumi_transferlog')
                         ->where('post_id', $postData->ID)
                         ->get()
                         ->each(function ($logData) use ($post) {
                             $log = new BangumiTransferLog();
-                            $log->fill((array) $logData);
+                            $log->fill((array)$logData);
                             $log->sitedriver = Str::replaceFirst('kl\\\\', '', $log->sitedriver);
                             // 日志文件名拆分与重新组装
                             $logFilePath = Str::after($logData->log_file, 'mbrs-cron');

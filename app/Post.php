@@ -94,10 +94,9 @@ class Post extends Model
         $timezone = $user ? $user->timezone : Config::get('app.timezone');
         return Carbon::createFromTimestamp(strtotime($value))
             ->timezone($timezone)
-        //Leave this part off if you want to keep the property as
-        //a Carbon object rather than always just returning a string
-            ->toDateTimeString()
-        ;
+            //Leave this part off if you want to keep the property as
+            //a Carbon object rather than always just returning a string
+            ->toDateTimeString();
     }
 
     public function getUpdatedAtAttribute($value)
@@ -106,8 +105,7 @@ class Post extends Model
         $timezone = $user ? $user->timezone : Config::get('app.timezone');
         return Carbon::createFromTimestamp(strtotime($value))
             ->timezone($timezone)
-            ->toDateTimeString()
-        ;
+            ->toDateTimeString();
     }
 
     public function getPostDateAttribute($value)
@@ -116,8 +114,7 @@ class Post extends Model
         $timezone = $user ? $user->timezone : Config::get('app.timezone');
         return Carbon::createFromTimestamp(strtotime($value))
             ->timezone($timezone)
-            ->toDateTimeString()
-        ;
+            ->toDateTimeString();
     }
 
     public function getPostModifiedAttribute($value)
@@ -126,8 +123,7 @@ class Post extends Model
         $timezone = $user ? $user->timezone : Config::get('app.timezone');
         return Carbon::createFromTimestamp(strtotime($value))
             ->timezone($timezone)
-            ->toDateTimeString()
-        ;
+            ->toDateTimeString();
     }
 
     public function getQueueKey(BangumiSetting $setting): string
