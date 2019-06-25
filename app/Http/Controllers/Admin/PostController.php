@@ -161,6 +161,14 @@ class PostController extends Controller
         ]);
     }
 
+    public function queueRetry(string $postId, string $settingId)
+    {
+        $post = Post::findOrFail($postId);
+        $setting = BangumiSetting::findOrFail($settingId);
+        ProcessPublishList::dispatch($post, $setting);
+        return response([], 200);
+    }
+
     /**
      * 标题匹配
      *

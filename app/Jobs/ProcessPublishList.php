@@ -103,6 +103,8 @@ class ProcessPublishList implements ShouldQueue
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'failed',
+            'post_id'    => $post->id,
+            'setting_id' => $setting->id,
         ], self::FAILED_EXPIRE);
     }
 }

@@ -37,6 +37,7 @@ Route::middleware('auth:api')->namespace('Admin')->group(function ($route) {
     // Posts Manage
     $route->get('/posts/admin', 'PostController@getList');
     $route->get('/post/queues/admin', 'PostController@queues');
+    $route->post('/post/queue/{postId}/{settingId}/retry/admin', 'PostController@queueRetry');
     $route->get('/post/{id}/admin', 'PostController@show');
     $route->post('/post/admin', 'PostController@add');
     $route->post('/post/{id}/admin', 'PostController@update');
