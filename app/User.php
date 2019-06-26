@@ -74,7 +74,9 @@ class User extends Authenticatable
     public function getAvatarAddrAttribute()
     {
         $url = '';
-        if (filter_var($this->avatar, FILTER_VALIDATE_URL) === false) {
+        if (empty($this->avatar)) {
+            $url = gravatar($this->email, 'large');
+        } elseif (filter_var($this->avatar, FILTER_VALIDATE_URL) === false) {
             $url = route('user.avatar', ['id' => $this->id]);
         } else {
             $url = $this->avatar;

@@ -16,6 +16,7 @@
         "bhutanio/torrent-bencode": "dev-master",
         "bupt1987/html-parser": "^3.0",
         "christeredvartsen/php-bittorrent": "^1.1",
+        "elfsundae/laravel-gravatar": "^2.2",
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.8.*",
         "laravel/tinker": "^1.0",

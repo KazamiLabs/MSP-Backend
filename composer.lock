@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "09696b769c32f20aec8cb3e1d2a8c451",
+    "content-hash": "c7a4d70515283c33d882b99cb4d01da9",
     "packages": [
         {
             "name": "3f/converter",
@@ -559,6 +559,54 @@
                 "validator"
             ],
             "time": "2018-08-16T20:49:45+00:00"
+        },
+        {
+            "name": "elfsundae/laravel-gravatar",
+            "version": "2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ElfSundae/laravel-gravatar.git",
+                "reference": "0e95e2565e8db216e798f2a000d2e5d2ae30c112"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ElfSundae/laravel-gravatar/zipball/0e95e2565e8db216e798f2a000d2e5d2ae30c112",
+                "reference": "0e95e2565e8db216e798f2a000d2e5d2ae30c112",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "~5.0",
+                "php": ">=5.6.4"
+            },
+            "require-dev": {
+                "orchestra/testbench": "~3.0",
+                "phpunit/phpunit": "~5.7|~6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Elf Sundae",
+                    "email": "elf.sundae@gmail.com",
+                    "homepage": "https://0x123.com"
+                }
+            ],
+            "description": "The easiest way to generate Gravatar avatar URL.",
+            "homepage": "https://github.com/ElfSundae/laravel-gravatar",
+            "keywords": [
+                "gravatar",
+                "helper",
+                "laravel"
+            ],
+            "time": "2018-01-05T21:39:01+00:00"
         },
         {
             "name": "erusev/parsedown",
