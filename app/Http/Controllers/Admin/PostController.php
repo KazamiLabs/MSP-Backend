@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -135,35 +134,40 @@ class PostController extends Controller
         return response([], 204);
     }
 
-    public function queues(Request $request)
+    public function queues()
     {
-        $keys = new Collection(
+        $keys = Collection::make(
             Cache::store('redis')
                 ->connection()
                 ->keys(Cache::store('redis')->getPrefix() . Post::getQueueListKey())
-        );
-        $keys = $keys->map(function ($key) {
-            return Str::replaceFirst(Cache::store('redis')->getPrefix(), '', $key);
-        });
+        )
+            ->map(function ($key) {
+                return Str::replaceFirst(Cache::store('redis')->getPrefix(), '', $key);
+            });
 
         if ($keys->isNotEmpty()) {
-            $list = new Collection(Cache::store('redis')->many($keys->all()));
+            $list = Collection::make(Cache::store('redis')->many($keys->all()));
         } else {
             $list = new Collection();
         }
         $hasDone = true;
-        $list->each(function ($item) use (&$hasDone) {
-            $hasDone = $hasDone && (!in_array($item['status'], ['pending', 'processing']));
+        $length = 0;
+        $list->each(function ($item) use (&$hasDone, &$length) {
+            if (in_array($item['status'], ['pending', 'processing'])) {
+                $hasDone = false;
+                ++$length;
+            } 
         });
         return response([
             'has_done' => $hasDone,
             'list'     => $list->values(),
+            'length'   => $length,
         ]);
     }
 
     public function queueRetry(string $postId, string $settingId)
     {
-        $post = Post::findOrFail($postId);
+        $post    = Post::findOrFail($postId);
         $setting = BangumiSetting::findOrFail($settingId);
         ProcessPublishList::dispatch($post, $setting);
         return response([], 200);
