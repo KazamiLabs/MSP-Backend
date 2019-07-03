@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
         //     DB::update('update user_records set count = 0;');
         // })->everyFiveMinutes()->runInBackground();
         // telescope 定期清理日志
-        $schedule->command('telescope:prune --hours=48')->hourly();
+        // $schedule->command('telescope:prune --hours=48')->hourly();
     }
 
     /**
