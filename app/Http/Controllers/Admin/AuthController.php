@@ -5,11 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 
 class AuthController extends Controller
 {
 
-    const TOKEN_TTL = 60;
+    private $ttl;
+
+    public function __construct()
+    {
+        $this->ttl = Config::get('dashboard.ttl');
+    }
 
     /**
      * Get a JWT via given credentials.
@@ -27,7 +33,7 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $token = $request->user()->setToken(self::TOKEN_TTL);
+        $token = $request->user()->setToken($this->ttl);
 
         return $this->respondWithToken($token);
     }
@@ -63,7 +69,7 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $request->user()->destroyToken();
-        $token = $request->user()->setToken(self::TOKEN_TTL);
+        $token = $request->user()->setToken($this->ttl);
         return $this->respondWithToken($token);
     }
 

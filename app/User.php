@@ -6,9 +6,8 @@ use App\Events\UserCreating;
 use App\Post;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Redis;
 
 class User extends Authenticatable
 {
@@ -114,28 +113,26 @@ class User extends Authenticatable
          * 则优先从 Redis 中查找，没有再生成
          */
         if (is_null($token)) {
-            $token = Redis::get("user:id:{$this->id}");
+            $token = Cache::store('redis')->get("user:id:{$this->id}");
             if (is_null($token)) {
                 $token = md5($this->toJson() . time() . rand(10, 99));
             }
         }
 
         if ($ttl > 0) {
-            Redis::set(
+            Cache::store('redis')->set(
                 "user:token:{$token}",
                 $this->id,
-                'EX',
                 60 * $ttl
             );
-            Redis::set(
+            Cache::store('redis')->set(
                 "user:id:{$this->id}",
                 $token,
-                'EX',
                 60 * $ttl
             );
         } else {
-            Redis::set("user:token:{$token}", $this->id);
-            Redis::set("user:id:{$this->id}", $token);
+            Cache::store('redis')->set("user:token:{$token}", $this->id);
+            Cache::store('redis')->set("user:id:{$this->id}", $token);
         }
         return $token;
     }
@@ -150,11 +147,11 @@ class User extends Authenticatable
     public function destroyToken()
     {
         // 移除相应的键
-        $token = Redis::get("user:id:{$this->id}");
+        $token = Cache::store('redis')->get("user:id:{$this->id}");
         if ($token) {
-            Redis::del("user:token:{$token}");
+            Cache::store('redis')->forget("user:token:{$token}");
         }
-        Redis::del("user:id:{$this->id}");
+        Cache::store('redis')->forget("user:id:{$this->id}");
     }
 
     /**
@@ -164,7 +161,7 @@ class User extends Authenticatable
      */
     public static function findWithToken(string $token)
     {
-        $userId = Redis::get("user:token:{$token}");
+        $userId = Cache::store('redis')->get("user:token:{$token}");
         if (is_null($userId)) {
             return null;
         }
