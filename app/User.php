@@ -62,12 +62,12 @@ class User extends Authenticatable
         return $query->select('id', 'nicename', 'avatar');
     }
 
-    public function scopeSearchCondition($query, $search_user)
+    public function scopeSearchCondition($query, $searchUser)
     {
-        return $query->where('name', 'like', "%{$search_user}%")
-            ->whereOr('email', 'like', "%{$search_user}%")
-            ->whereOr('nicename', 'like', "%{$search_user}%")
-            ->whereOr('email', 'like', "%{$search_user}%");
+        return $query->where('name', 'like', "%{$searchUser}%")
+            ->whereOr('email', 'like', "%{$searchUser}%")
+            ->whereOr('nicename', 'like', "%{$searchUser}%")
+            ->whereOr('email', 'like', "%{$searchUser}%");
     }
 
     public function getAvatarAddrAttribute()

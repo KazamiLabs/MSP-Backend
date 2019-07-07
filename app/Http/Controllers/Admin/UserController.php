@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -61,5 +62,20 @@ class UserController extends Controller
         $user = new User($data);
         $user->save();
         return response([], 200);
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $path     = $request->file('avatar')->store('private/avatar');
+        $file     = Storage::disk('local')->path($path);
+        $filename = pathinfo($file, PATHINFO_BASENAME);
+        // save avatar
+        $request->user()->avatar = $filename;
+        $request->user()->save();
+        $request->user()->refresh();
+        return [
+            'msg'    => 'Picture has been uploaded.',
+            'avatar' => $request->user()->avatar_addr,
+        ];
     }
 }

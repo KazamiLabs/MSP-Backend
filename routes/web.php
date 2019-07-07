@@ -1,5 +1,6 @@
 <?php
 
+use App\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,8 +38,8 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/user/{id}/avatar', function () {
-    return response()->file(storage_path('app/private/avatar/default.jpg'));
+Route::get('/user/{user}/avatar', function (User $user) {
+    return response()->file(Storage::disk('local')->path("private/avatar/{$user->avatar}"));
 })->name('user.avatar');
 
 Route::middleware('auth:api')
