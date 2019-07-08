@@ -17,6 +17,8 @@ class BangumiSetting extends Model
         'status',
     ];
 
+    protected $appends = ['tags'];
+
     private $avaliableSites = [
         'AcgRip'     => 'ACG.RIP',
         'MoeBangumi' => '萌番组',
@@ -46,4 +48,13 @@ class BangumiSetting extends Model
         }
     }
 
+    public function getTagsAttribute()
+    {
+        return $this->tags()->pluck('name');
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(BangumiSettingTag::class, null, 'setting_id', 'tag_id');
+    }
 }

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\SysSetting;
 use App\BangumiSetting;
+use App\BangumiSettingTag;
+use App\Http\Controllers\Controller;
+use App\SysSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use App\Http\Controllers\Controller;
 
 class SettingController extends Controller
 {
@@ -15,7 +16,8 @@ class SettingController extends Controller
     public function bangumiSettings(Request $request)
     {
         $limit    = $request->get('limit', 15);
-        $settings = BangumiSetting::select('id', 'sitename', 'sitedriver', 'username', 'status')->paginate($limit);
+        $settings = BangumiSetting::select('id', 'sitename', 'sitedriver', 'username', 'status')
+            ->paginate($limit);
         return $settings;
     }
 
@@ -26,10 +28,24 @@ class SettingController extends Controller
             'username'   => 'required',
             'password'   => 'required',
             'status'     => 'required',
+            'tags'       => 'array',
         ]);
 
         $setting = new BangumiSetting($request->all());
         $setting->save();
+
+        // 标签处理
+        $tags = Collection::make($request->post('tags'))
+            ->map(function ($tagName) {
+                $tag = BangumiSettingTag::where('name', $tagName)->first();
+                if (!$tag) {
+                    $tag = new BangumiSettingTag(['name' => $tagName]);
+                    $tag->save();
+                }
+                return $tag;
+            });
+
+        $setting->tags()->saveMany($tags);
 
         return response([], 201);
     }
@@ -41,10 +57,26 @@ class SettingController extends Controller
             'sitedriver' => 'required',
             'username'   => 'required',
             'status'     => 'required',
+            'tags'       => 'array',
         ]);
 
-        $setting->fill($request->toArray());
+        $setting->fill($request->all());
         $setting->save();
+
+        // 标签处理
+        $tags = Collection::make($request->post('tags'))
+            ->map(function ($tagName) {
+                $tag = BangumiSettingTag::where('name', $tagName)->first();
+                if (!$tag) {
+                    $tag = new BangumiSettingTag(['name' => $tagName]);
+                    $tag->save();
+                }
+                return $tag;
+            });
+
+        $setting->tags()->detach();
+        $setting->tags()->saveMany($tags);
+
         return response([], 200);
     }
 
@@ -58,9 +90,10 @@ class SettingController extends Controller
         return response([], 200);
     }
 
-    public function deleteBangumiSettings(Request $request, $id)
+    public function deleteBangumiSettings($id)
     {
         $setting = BangumiSetting::findOrFail($id);
+        $setting->tags()->detach();
         $setting->delete();
         return response([], 204);
     }
@@ -73,7 +106,7 @@ class SettingController extends Controller
         return $list;
     }
 
-    public function sysSettings(Request $request)
+    public function sysSettings()
     {
         return SysSetting::getValues();
     }
@@ -92,5 +125,10 @@ class SettingController extends Controller
         }
 
         return response(null, 200);
+    }
+
+    public function allTags()
+    {
+        return BangumiSettingTag::pluck('name');
     }
 }

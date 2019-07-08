@@ -59,6 +59,7 @@ Route::middleware('auth:api')->namespace('Admin')->group(function ($route) {
     $route->post('/bangumi-setting/{id}/admin', 'SettingController@updateBangumiSettings');
     $route->post('/bangumi-setting/{id}/admin/status', 'SettingController@changeBangumiSettingStatus');
     $route->delete('/bangumi-setting/{id}/admin', 'SettingController@deleteBangumiSettings');
+    $route->get('/bangumi-settings/all-tags/admin', 'SettingController@allTags');
     // System Setting
     $route->get('/settings/admin', 'SettingController@sysSettings');
     $route->post('/setting/admin', 'SettingController@setSysSetting');
