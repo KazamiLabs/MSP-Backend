@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\BangumiSetting;
+use App\Events\SyncQueuesChange;
 use App\Post;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -19,8 +20,10 @@ class ProcessPublishList implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    const SUCCESS_EXPIRE = 3600;
-    const FAILED_EXPIRE  = 86400;
+    const PENDING_EXPIRE    = 3600;
+    const PROCESSING_EXIPRE = 3600;
+    const SUCCESS_EXPIRE    = 3600;
+    const FAILED_EXPIRE     = 86400;
 
     protected $post;
     protected $setting;
@@ -33,13 +36,14 @@ class ProcessPublishList implements ShouldQueue
     public function __construct(Post $post, BangumiSetting $setting)
     {
         //
+        $this->dispatchChangeEvent();
         $this->post    = $post;
         $this->setting = $setting;
         Cache::store('redis')->set($post->getQueueKey($setting), [
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'pending',
-        ]);
+        ], self::PENDING_EXPIRE);
     }
 
     /**
@@ -58,7 +62,7 @@ class ProcessPublishList implements ShouldQueue
             'post_title' => $post->post_title,
             'sitename'   => $setting->sitename,
             'status'     => 'processing',
-        ]);
+        ], self::PENDING_EXPIRE);
 
         // 开始处理
         $class = "\\App\\Drivers\\Bangumi\\{$setting->sitedriver}";
@@ -106,5 +110,21 @@ class ProcessPublishList implements ShouldQueue
             'post_id'    => $post->id,
             'setting_id' => $setting->id,
         ], self::FAILED_EXPIRE);
+    }
+
+    public function __destruct()
+    {
+        $this->dispatchChangeEvent();
+    }
+
+    /**
+     * 分发队列变动事件
+     *
+     * @author Tsukasa Kanzaki <tsukasa.kzk@gmail.com>
+     * @datetime 2019-07-16
+     */
+    private function dispatchChangeEvent()
+    {
+        App::make('events')->dispatch(new SyncQueuesChange);
     }
 }

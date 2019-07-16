@@ -22,6 +22,7 @@
         "laravel/tinker": "^1.0",
         "php-ai/php-ml": "^0.6.2",
         "predis/predis": "~1.0",
+        "pusher/pusher-php-server": "~3.0",
         "rmccue/requests": "^1.7"
     },
     "require-dev": {

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\SysSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 class SettingController extends Controller
 {
@@ -130,5 +131,15 @@ class SettingController extends Controller
     public function allTags()
     {
         return BangumiSettingTag::pluck('name');
+    }
+
+    public function echoSetting()
+    {
+        return [
+            'broadcaster' => 'pusher',
+            'key'         => Config::get('broadcasting.connections.pusher.key'),
+            'cluster'     => Config::get('broadcasting.connections.pusher.options.cluster'),
+            'forceTLS'    => true,
+        ];
     }
 }

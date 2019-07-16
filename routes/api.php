@@ -63,6 +63,7 @@ Route::middleware('auth:api')->namespace('Admin')->group(function ($route) {
     // System Setting
     $route->get('/settings/admin', 'SettingController@sysSettings');
     $route->post('/setting/admin', 'SettingController@setSysSetting');
+    $route->get('/setting/echo/admin', 'SettingController@echoSetting');
     // Profile avatar
     $route->post('/profile/avatar/admin', 'UserController@uploadAvatar');
 });

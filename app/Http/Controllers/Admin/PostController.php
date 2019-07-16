@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Post;
 use App\Bangumi;
 use App\BangumiSetting;
-use App\Http\Controllers\Controller;
-use App\Jobs\ProcessPublishList;
-use App\Post;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Events\SyncQueuesChange;
+use App\Jobs\ProcessPublishList;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -136,32 +138,11 @@ class PostController extends Controller
 
     public function queues()
     {
-        $keys = Collection::make(
-            Cache::store('redis')
-                ->connection()
-                ->keys(Cache::store('redis')->getPrefix() . Post::getQueueListKey())
-        )
-            ->map(function ($key) {
-                return Str::replaceFirst(Cache::store('redis')->getPrefix(), '', $key);
-            });
-
-        if ($keys->isNotEmpty()) {
-            $list = Collection::make(Cache::store('redis')->many($keys->all()));
-        } else {
-            $list = new Collection();
-        }
-        $hasDone = true;
-        $length = 0;
-        $list->each(function ($item) use (&$hasDone, &$length) {
-            if (in_array($item['status'], ['pending', 'processing'])) {
-                $hasDone = false;
-                ++$length;
-            } 
-        });
+        $event = App::make(SyncQueuesChange::class);
         return response([
-            'has_done' => $hasDone,
-            'list'     => $list->values(),
-            'length'   => $length,
+            'has_done' => $event->has_done,
+            'list'     => $event->list,
+            'length'   => $event->length,
         ]);
     }
 
