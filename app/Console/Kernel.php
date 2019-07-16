@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
@@ -33,7 +34,12 @@ class Kernel extends ConsoleKernel
         //     DB::update('update user_records set count = 0;');
         // })->everyFiveMinutes()->runInBackground();
         // telescope 定期清理日志
-        // $schedule->command('telescope:prune --hours=48')->hourly();
+        $hours = Config::get('telescope.expire_hours');
+        if (!is_null($hours) && (int) $hours >= 0) {
+            $schedule->command('telescope:prune', [
+                '--hours' => $hours,
+            ])->everyMinute();
+        }
     }
 
     /**
