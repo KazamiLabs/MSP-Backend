@@ -7,9 +7,9 @@ use Converter\HTMLConverter;
 use CURLFile;
 use Exception;
 use HtmlParser\ParserDom;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Requests_Cookie_Jar;
 use Requests_Session;
 
@@ -19,8 +19,7 @@ class AcgRip extends Base
     const COOKIE_MAINNAME = 'AcgRip';
     const COOKIE_EXPIRE   = 315360000;
 
-    private $year_lst = [];
-    private $default  = [];
+    private $default = [];
     private $session;
     private $username;
     private $password;
@@ -47,7 +46,6 @@ class AcgRip extends Base
 
         // 默认值预置
         $this->default = [
-            'year'        => date('Y'),
             'category_id' => 1,
         ];
 
@@ -83,23 +81,17 @@ class AcgRip extends Base
     public function upload()
     {
         // 数据校验
-        $validator = Validator::make($this->data, [
+        if (!$this->validate([
             'post_id'      => 'required|integer',
             'title'        => 'required|min:1',
             'bangumi'      => 'required|min:1',
-            'author'       => 'required|min:1',
-            'content'      => 'required|min:1',
+            'group'        => 'required',
+            'content'      => 'required',
             'year'         => 'required|integer|min:2000',
             'torrent_name' => 'required|min:1',
             'torrent_path' => 'required|min:1',
-        ]);
-
-        if ($validator->fails()) {
-            Log::warning(
-                '数据检验失败',
-                $validator->errors()->all()
-            );
-            throw new Exception('Parameter error');
+        ])) {
+            throw new Exception($this->validateErrors()->first());
         }
 
         if (!is_file($this->data['torrent_path'])) {
@@ -116,13 +108,21 @@ class AcgRip extends Base
             'post[torrent]'      => $torrent,
             'authenticity_token' => $this->getToken('/cp/posts/upload'),
             'post[category_id]'  => $this->default['category_id'],
+            'post[series_id]'    => 0,
             'commit'             => '发布',
             'utf8'               => '✓',
+            'post[post_as_team]' => 0,
         ];
 
         // $data['series_id'] = $this->getSeries($data['year'], $this->data['bangumi']);
 
-        if (in_array($this->data['author'], ['幻之字幕组', '幻之字幕組'])) {
+        $teams = Collection::make([
+            '幻之字幕组',
+            '幻之字幕組',
+            'Mabors-Sub',
+        ]);
+
+        if ($teams->contains($this->data['group'])) {
             $data['post[post_as_team]'] = 1;
         }
 

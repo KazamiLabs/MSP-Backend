@@ -76,8 +76,10 @@ class ProcessPublishList implements ShouldQueue
         $driver->author       = $post->post_author;
         $driver->title        = $post->post_title;
         $driver->content      = $post->post_content;
+        $driver->content_md   = $post->markdown_code;
         $driver->year         = $post->bangumi->year;
         $driver->bangumi      = $post->bangumi->title;
+        $driver->group        = $post->bangumi->group_name;
         $driver->torrent_name = $post->bangumi->filename;
         $driver->torrent_path = Storage::path($post->bangumi->filepath);
         $driver->upload();

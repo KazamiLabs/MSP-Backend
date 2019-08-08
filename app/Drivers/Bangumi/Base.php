@@ -3,12 +3,24 @@ namespace App\Drivers\Bangumi;
 
 use App\BangumiTransferLog;
 use Exception;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
 
 abstract class Base
 {
     protected $data      = [];
     protected $callback  = [];
     protected $logBuffer = '';
+
+    /**
+     * Validator
+     *
+     * @var \Illuminate\Contracts\Validation\Validator
+     * @author Tsukasa Kanzaki <tsukasa.kzk@gmail.com>
+     * @datetime 2019-07-27
+     */
+    private $validator;
 
     /**
      * 映射设置的属性到 $data
@@ -60,6 +72,36 @@ abstract class Base
     final protected function logInfo(string $message)
     {
         $this->logBuffer .= $message . PHP_EOL;
+    }
+
+    /**
+     * 参数验证
+     *
+     * @param array $rules
+     * @return boolean
+     * @author Tsukasa Kanzaki <tsukasa.kzk@gmail.com>
+     * @datetime 2019-07-27
+     */
+    final protected function validate(array $rules): bool
+    {
+        $this->validator = Validator::make(
+            $this->data,
+            $rules
+        );
+
+        return $this->validator->passes();
+    }
+
+    /**
+     * 返回验证器错误信息集合
+     *
+     * @return Collection
+     * @author Tsukasa Kanzaki <tsukasa.kzk@gmail.com>
+     * @datetime 2019-07-27
+     */
+    final protected function validateErrors(): MessageBag
+    {
+        return $this->validator->errors();
     }
 
     abstract public function upload();

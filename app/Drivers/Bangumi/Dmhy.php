@@ -7,6 +7,7 @@ use App\Tools\Ocr\JdWanXiang\JdWanXiang;
 use CURLFile;
 use Exception;
 use HtmlParser\ParserDom;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -103,43 +104,43 @@ class Dmhy extends Base
     }
     public function upload()
     {
-        $require = ['post_id', 'title', 'bangumi', 'author', 'content', 'torrent_name', 'torrent_path'];
-        foreach ($require as $field) {
-            if (isset($this->data[$field])) {
-                continue;
-            }
-            if (isset($this->default[$field])) {
-                $this->data[$field] = $this->default[$field];
-                continue;
-            }
-            throw new Exception("Field {$field} is required");
+        if (!$this->validate([
+            'post_id'      => 'required',
+            'title'        => 'required',
+            'bangumi'      => 'required',
+            'group'        => 'required',
+            'content'      => 'required',
+            'torrent_name' => 'required',
+            'torrent_path' => 'required',
+        ])) {
+            throw new Exception($this->validateErrors()->first());
         }
 
         if (!is_file($this->data['torrent_path'])) {
             throw new Exception("Torrent [{$this->data['torrent_path']}] isn't validate file");
         }
 
-        $torrent = new CURLFile($this->data['torrent_path'], 'application/x-bittorrent', $this->data['torrent_name']);
+        $torrent = new CURLFile(
+            $this->data['torrent_path'],
+            'application/x-bittorrent',
+            $this->data['torrent_name']
+        );
 
-        if ($this->data['author'] == '幻之字幕組') {
-            $this->data['author'] = '幻之字幕组';
-        }
-        $teams = [
-            '0'   => '个人发布',
-            '430' => '幻之字幕组',
-            '726' => 'Mabors-Raws',
-        ];
+        $teams = Collection::make([
+            ['id' => 0, 'name' => '个人发布'],
+            ['id' => 430, 'name' => '幻之字幕组'],
+            ['id' => 430, 'name' => '幻之字幕組'],
+            ['id' => 430, 'name' => 'Mabors-Sub'],
+            ['id' => 726, 'name' => 'Mabors-Raws'],
+        ]);
 
         $data = [
             'sort_id'       => 2, // 分类ID，动画
             'bt_data_title' => $this->data['title'],
             'bt_data_intro' => $this->data['content'],
             'bt_file'       => $torrent,
-            'team_id'       => array_search($this->data['author'], $teams),
+            'team_id'       => $teams->where('name', $this->data['group'])->min('id'),
         ];
-        if ($data['team_id'] === false) {
-            $data['team_id'] = 0;
-        }
 
         $hook = new Requests_Hooks();
         $hook->register('curl.before_send', function ($ch) use ($data) {
@@ -149,6 +150,7 @@ class Dmhy extends Base
             $response = $this->session->post('/topics/add', [], null, ['hooks' => $hook]);
 
             Log::info('Dmhy 上传响应', [$response]);
+            $this->logInfo('Dmhy 上传响应');
             $this->logInfo($response->body);
 
             $message = $this->getMessage($response->body);
@@ -237,7 +239,7 @@ class Dmhy extends Base
         }
     }
 
-    private function getSiteId(string $title): int
+    private function getSiteId(string $title): string
     {
         $response = $this->session->get('/topics/mlist/scope/team');
         $dom      = $this->dealResponse($response->body);
@@ -248,7 +250,7 @@ class Dmhy extends Base
             if ($plainText == $title) {
                 $href    = $alink->getAttr('href');
                 $matches = [];
-                $flag    = preg_match('/(?<=\/)(\d+)(?=_)/', $alink->getAttr('href'), $matches);
+                $flag    = preg_match('/(?<=\/)(\d+)(?=_)/', $href, $matches);
                 if ($flag && isset($matches[1])) {
                     $siteId = $matches[1];
                     break;

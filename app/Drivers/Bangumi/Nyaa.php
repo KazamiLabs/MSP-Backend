@@ -3,13 +3,10 @@
 namespace App\Drivers\Bangumi;
 
 use App\Drivers\Bangumi\Base;
-use Converter\BBCodeConverter;
-use Converter\HTMLConverter;
 use CURLFile;
 use Exception;
 use HtmlParser\ParserDom;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use PHP\BitTorrent\Torrent;
 use Requests_Auth_Basic;
 use Requests_Hooks;
@@ -43,22 +40,16 @@ class Nyaa extends Base
     public function upload()
     {
         // 数据校验
-        $validator = Validator::make($this->data, [
+        if (!$this->validate([
             'post_id'      => 'required|integer',
             'title'        => 'required|min:1',
             'bangumi'      => 'required|min:1',
             'author'       => 'required|min:1',
-            'content'      => 'required|min:1',
+            'content_md'      => 'required|min:1',
             'torrent_name' => 'required|min:1',
             'torrent_path' => 'required|min:1',
-        ]);
-
-        if ($validator->fails()) {
-            Log::warning(
-                '数据检验失败',
-                $validator->errors()->all()
-            );
-            throw new Exception('Parameter error');
+        ])) {
+            throw new Exception($this->validateErrors()->first());
         }
 
         if (!is_file($this->data['torrent_path'])) {
@@ -69,6 +60,7 @@ class Nyaa extends Base
             $this->dealTorrent($this->data['torrent_path']);
         } catch (Throwable $t) {
             Log::warning("Nyaa: 处理种子文件失败. {$t->getMessage()}");
+            $this->logInfo('Nyaa: 处理种子文件失败');
             $this->logInfo($t->getMessage());
         }
         $torrent = new CURLFile(
@@ -99,10 +91,8 @@ class Nyaa extends Base
                     throw new Exception('Need at least one image');
                 }
             }
-            $html_coverter   = new HTMLConverter($data['torrent_data']['description']);
-            $bbcode_coverter = new BBCodeConverter($html_coverter->toBBCode());
 
-            $data['torrent_data']['description'] = $bbcode_coverter->toMarkdown();
+            $data['torrent_data']['description'] = $this->data['content_md'];
             // 编码 torrent_data
             $data['torrent_data'] = json_encode($data['torrent_data']);
 
