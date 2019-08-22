@@ -23,7 +23,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         Telescope::ignoreMigrations();
 
         Telescope::filter(function (IncomingEntry $entry) {
-            if ($this->app->isLocal() && $this->app->environment() === 'sit') {
+            if ($this->app->isLocal() || $this->app->environment() === 'sit') {
                 return true;
             }
 
