@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BangumiSetting extends Model
 {
+    const STATUS_DISABLED = 0;
+    const STATUS_ENABLED  = 1;
+
     use SoftDeletes;
     //
     protected $fillable = [

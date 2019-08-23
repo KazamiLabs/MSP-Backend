@@ -105,4 +105,6 @@ abstract class Base
     }
 
     abstract public function upload();
+
+    abstract public function checkAccount(): bool;
 }

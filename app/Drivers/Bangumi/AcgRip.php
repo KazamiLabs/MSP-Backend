@@ -59,7 +59,7 @@ class AcgRip extends Base
             return;
         }
 
-        Log::info("ACG.RIP: {$this->username} need login");
+        Log::debug("ACG.RIP: {$this->username} need login");
         $this->logInfo("ACG.RIP: {$this->username} need login");
 
         $data = [
@@ -73,9 +73,14 @@ class AcgRip extends Base
 
         $response = $this->session->post('/users/sign_in', null, $data);
 
-        Log::info("AcgRip 登录响应", [$response]);
+        Log::debug("AcgRip 登录响应", [$response]);
         $this->logInfo($response->body);
 
+    }
+
+    public function checkAccount(): bool
+    {
+        return $this->isLogin();
     }
 
     public function upload()
@@ -133,12 +138,12 @@ class AcgRip extends Base
         try {
             $response = $this->session->post('/cp/posts', ['Referer' => 'https://acg.rip/cp/posts/upload'], null, ['hooks' => $hook]);
 
-            Log::info('AcgRip 上传响应', [$response]);
+            Log::debug('AcgRip 上传响应', [$response]);
             $this->logInfo($response->body);
 
             $siteId = $this->getSiteId($this->data['title']);
 
-            Log::info("AcgRip 上传 ID {$siteId}");
+            Log::debug("AcgRip 上传 ID {$siteId}");
             $this->logInfo($siteId);
 
             $this->callback = [
@@ -173,7 +178,7 @@ class AcgRip extends Base
     {
         $response = $this->session->get('/cp/posts', [], ['follow_redirects' => false]);
 
-        Log::info("Acgrip 登录检测: {$response->status_code}", [$response]);
+        Log::debug("Acgrip 登录检测: {$response->status_code}", [$response]);
         $this->logInfo("Acgrip 登录检测: {$response->status_code}");
 
         return $response->status_code === 200;
