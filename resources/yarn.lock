@@ -3286,9 +3286,9 @@ lodash.uniq@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
 
-lodash@^4.0.0, lodash@^4.17.10, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.17.5, lodash@~4.17.10:
-  version "4.17.10"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
+lodash@^4.0.0, lodash@^4.17.10, lodash@^4.17.19, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.17.5, lodash@~4.17.10:
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
 
 loglevel@^1.4.1:
   version "1.6.1"
@@ -5670,8 +5670,8 @@ vue-loader@^13.7.1:
     vue-template-es2015-compiler "^1.6.0"
 
 vue-material@^1.0.0-beta-10.2:
-  version "1.0.0-beta-12"
-  resolved "https://registry.yarnpkg.com/vue-material/-/vue-material-1.0.0-beta-12.tgz#9c7ba28bfa5b14467460ddf4006375685eb0331c"
+  version "1.0.0-beta-14"
+  resolved "https://registry.yarnpkg.com/vue-material/-/vue-material-1.0.0-beta-14.tgz#bb3fc46bec4ed045f990744383ac944a190ceed3"
   dependencies:
     vue-github-buttons "^3.1.0"
     vue-toc "0.0.1"
