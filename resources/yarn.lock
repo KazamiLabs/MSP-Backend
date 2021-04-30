@@ -2986,9 +2986,9 @@ isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
 
-jquery@^3.2:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
+jquery@^3.5:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.5.0.tgz#9980b97d9e4194611c36530e7dc46a58d7340fc9"
 
 js-base64@^2.1.8, js-base64@^2.1.9:
   version "2.4.8"
@@ -5670,8 +5670,8 @@ vue-loader@^13.7.1:
     vue-template-es2015-compiler "^1.6.0"
 
 vue-material@^1.0.0-beta-10.2:
-  version "1.0.0-beta-14"
-  resolved "https://registry.yarnpkg.com/vue-material/-/vue-material-1.0.0-beta-14.tgz#bb3fc46bec4ed045f990744383ac944a190ceed3"
+  version "1.0.0-beta-12"
+  resolved "https://registry.yarnpkg.com/vue-material/-/vue-material-1.0.0-beta-12.tgz#9c7ba28bfa5b14467460ddf4006375685eb0331c"
   dependencies:
     vue-github-buttons "^3.1.0"
     vue-toc "0.0.1"
