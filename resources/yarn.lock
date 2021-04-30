@@ -2388,8 +2388,8 @@ getpass@^0.1.1:
     assert-plus "^1.0.0"
 
 github-buttons@^2.8.0:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/github-buttons/-/github-buttons-2.14.0.tgz#32ce381651091accda09217cd7a6e4c77f91e222"
+  version "2.14.1"
+  resolved "https://registry.yarnpkg.com/github-buttons/-/github-buttons-2.14.1.tgz#56177245e328892949dd59af58c6a7b6c530ad14"
 
 glob-base@^0.3.0:
   version "0.3.0"
@@ -2762,8 +2762,8 @@ inherits@2.0.3, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.1:
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
 
 ini@~1.3.0:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.7.tgz#a09363e1911972ea16d7a8851005d84cf09a9a84"
 
 internal-ip@1.2.0:
   version "1.2.0"
@@ -5586,6 +5586,10 @@ tslib@^1.9.3:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.13.0.tgz#c881e13cc7015894ed914862d276436fa9a47043"
 
+tslib@^1.9.3:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
+
 tty-browserify@0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/tty-browserify/-/tty-browserify-0.0.0.tgz#a157ba402da24e9bf957f9aa69d524eed42901a6"
@@ -5797,8 +5801,8 @@ vm-browserify@0.0.4:
     indexof "0.0.1"
 
 vue-github-button@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/vue-github-button/-/vue-github-button-1.2.0.tgz#5624a2807b16bdac61589f55503b8a492d2a9d5b"
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/vue-github-button/-/vue-github-button-1.3.0.tgz#a4da317a3b93d05824768b3916a0d22fa91603be"
   dependencies:
     github-buttons "^2.8.0"
 
